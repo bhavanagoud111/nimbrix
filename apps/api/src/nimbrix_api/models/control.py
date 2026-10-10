@@ -117,3 +117,16 @@ class IdempotencyRecord(UUIDPrimaryKeyMixin, TenantOwnedMixin, TimestampMixin, B
     status_code: Mapped[int | None] = mapped_column()
     response_body: Mapped[dict[str, Any] | None] = mapped_column()
     expires_at: Mapped[datetime] = mapped_column(nullable=False)
+
+
+class SimulatedResourceState(UUIDPrimaryKeyMixin, TenantOwnedMixin, TimestampMixin, Base):
+    """State changes made by the simulation adapter. Observed inventory is never modified."""
+
+    __tablename__ = "simulated_resource_states"
+    __table_args__ = (UniqueConstraint("tenant_id", "resource_id"),)
+
+    resource_id: Mapped[str] = mapped_column(String(512), nullable=False)
+    simulated_state: Mapped[str] = mapped_column(String(32), nullable=False)
+    execution_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("remediation_executions.id", ondelete="CASCADE"), nullable=False
+    )

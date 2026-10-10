@@ -4,6 +4,7 @@ from fastapi import APIRouter
 
 from nimbrix_api.api.v1 import (
     anomalies,
+    approvals,
     audit,
     auth,
     budgets,
@@ -33,6 +34,7 @@ for module in (
     anomalies,
     forecasts,
     investigations,
+    approvals,
     audit,
 ):
     api_router.include_router(module.router)

@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/api/v1/actions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Allowlisted remediation actions */
+        get: operations["list_actions_api_v1_actions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/analysis/run": {
         parameters: {
             query?: never;
@@ -83,6 +100,92 @@ export interface paths {
         put?: never;
         /** Change anomaly status */
         post: operations["update_anomaly_status_api_v1_anomalies__anomaly_id__status_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/approvals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Approval requests */
+        get: operations["list_approvals_api_v1_approvals_get"];
+        put?: never;
+        /** Request approval for an action */
+        post: operations["create_approval_api_v1_approvals_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/approvals/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Policy check and impact preview (creates nothing) */
+        post: operations["preview_approval_api_v1_approvals_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/approvals/{approval_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One approval request */
+        get: operations["get_approval_api_v1_approvals__approval_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/approvals/{approval_id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Approve (requires the reviewed payload_hash) */
+        post: operations["approve_api_v1_approvals__approval_id__approve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/approvals/{approval_id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reject with a reason */
+        post: operations["reject_api_v1_approvals__approval_id__reject_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -686,6 +789,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/remediations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Remediation executions */
+        get: operations["list_remediations_api_v1_remediations_get"];
+        put?: never;
+        /** Execute an approved action (simulation) */
+        post: operations["create_remediation_api_v1_remediations_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/remediations/{execution_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Execution outcome and verification */
+        get: operations["get_remediation_api_v1_remediations__execution_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/resources": {
         parameters: {
             query?: never;
@@ -741,6 +879,29 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ActionList */
+        ActionList: {
+            /** Items */
+            items: components["schemas"]["ActionOut"][];
+            /**
+             * Live Actions Enabled
+             * @default false
+             */
+            live_actions_enabled: boolean;
+        };
+        /** ActionOut */
+        ActionOut: {
+            /** Description */
+            description: string;
+            /** Mode */
+            mode: string;
+            /** Name */
+            name: string;
+            /** Payload Schema */
+            payload_schema: {
+                [key: string]: unknown;
+            };
+        };
         /** AgentStepOut */
         AgentStepOut: {
             /** Agent Role */
@@ -848,6 +1009,95 @@ export interface components {
              * @enum {string}
              */
             status: "open" | "acknowledged" | "resolved" | "dismissed";
+        };
+        /** ApprovalCreate */
+        ApprovalCreate: {
+            /** Action Type */
+            action_type: string;
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            };
+            /** Recommendation Id */
+            recommendation_id?: string | null;
+        };
+        /** ApprovalDecision */
+        ApprovalDecision: {
+            /**
+             * Payload Hash
+             * @description Hash of the payload you reviewed
+             */
+            payload_hash?: string | null;
+            /** Reason */
+            reason?: string | null;
+        };
+        /** ApprovalList */
+        ApprovalList: {
+            /** Items */
+            items: components["schemas"]["ApprovalOut"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /** ApprovalOut */
+        ApprovalOut: {
+            /** Action Type */
+            action_type: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Decided At */
+            decided_at: string | null;
+            /** Decided By */
+            decided_by: string | null;
+            /** Decided By Email */
+            decided_by_email?: string | null;
+            /** Decision Reason */
+            decision_reason: string | null;
+            /** Execution Id */
+            execution_id?: string | null;
+            /**
+             * Expires At
+             * Format: date-time
+             */
+            expires_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Impact Preview */
+            impact_preview: {
+                [key: string]: unknown;
+            };
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            };
+            /** Payload Hash */
+            payload_hash: string;
+            /** Policy Result */
+            policy_result: {
+                [key: string]: unknown;
+            };
+            /** Recommendation Id */
+            recommendation_id: string | null;
+            /**
+             * Requested By
+             * Format: uuid
+             */
+            requested_by: string;
+            /** Requested By Email */
+            requested_by_email?: string | null;
+            /** Rollback Plan */
+            rollback_plan: {
+                [key: string]: unknown;
+            };
+            /** Status */
+            status: string;
+            /** Target Resource Id */
+            target_resource_id: string;
         };
         /** AuditEventOut */
         AuditEventOut: {
@@ -1768,6 +2018,37 @@ export interface components {
          * @enum {string}
          */
         Permission: "read" | "imports:write" | "budgets:write" | "analysis:run" | "anomalies:update" | "investigations:run" | "recommendations:simulate" | "recommendations:update" | "approvals:request" | "approvals:decide" | "remediations:execute" | "connections:read" | "connections:write" | "audit:read";
+        /** PolicyPreview */
+        PolicyPreview: {
+            /** Action Type */
+            action_type: string;
+            /** Allowed */
+            allowed: boolean;
+            /** Checks */
+            checks: {
+                [key: string]: unknown;
+            }[];
+            /** Denial Reasons */
+            denial_reasons: string[];
+            /** Impact Preview */
+            impact_preview: {
+                [key: string]: unknown;
+            };
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            } | null;
+            /** Payload Hash */
+            payload_hash: string | null;
+            /** Resource */
+            resource: {
+                [key: string]: unknown;
+            } | null;
+            /** Rollback Plan */
+            rollback_plan: {
+                [key: string]: unknown;
+            };
+        };
         /** ReadinessChecks */
         ReadinessChecks: {
             database: components["schemas"]["DatabaseCheck"];
@@ -1877,12 +2158,86 @@ export interface components {
                 [key: string]: unknown;
             } | null;
         };
+        /** RejectDecision */
+        RejectDecision: {
+            /** Reason */
+            reason: string;
+        };
+        /** RemediationCreate */
+        RemediationCreate: {
+            /**
+             * Approval Request Id
+             * Format: uuid
+             */
+            approval_request_id: string;
+        };
+        /** RemediationList */
+        RemediationList: {
+            /** Items */
+            items: components["schemas"]["RemediationOut"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
         /**
          * RemediationMode
          * @description How remediation actions may run. Only simulation exists today.
          * @enum {string}
          */
         RemediationMode: "simulation_only";
+        /** RemediationOut */
+        RemediationOut: {
+            /** Action Type */
+            action_type: string;
+            /**
+             * Approval Request Id
+             * Format: uuid
+             */
+            approval_request_id: string;
+            /** Attempts */
+            attempts: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Dry Run */
+            dry_run: boolean;
+            /** Error */
+            error: string | null;
+            /**
+             * Executed By
+             * Format: uuid
+             */
+            executed_by: string;
+            /** Finished At */
+            finished_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Mode
+             * @description Always 'simulation': no cloud write is possible
+             */
+            mode: string;
+            /** Result */
+            result: {
+                [key: string]: unknown;
+            };
+            /** Rollback Plan */
+            rollback_plan: {
+                [key: string]: unknown;
+            };
+            /** Started At */
+            started_at: string | null;
+            /** State */
+            state: string;
+            /** Verification */
+            verification: {
+                [key: string]: unknown;
+            };
+        };
         /** ResourceDetail */
         ResourceDetail: {
             /** Account Id */
@@ -2163,6 +2518,44 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    list_actions_api_v1_actions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActionList"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     run_analysis_api_v1_analysis_run_post: {
         parameters: {
             query?: never;
@@ -2354,6 +2747,263 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AnomalyOut"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_approvals_api_v1_approvals_get: {
+        parameters: {
+            query?: {
+                status?: string | null;
+                limit?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApprovalList"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_approval_api_v1_approvals_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Unique key per logical operation; retries with the same key are safe. */
+                "Idempotency-Key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApprovalCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApprovalOut"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    preview_approval_api_v1_approvals_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApprovalCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PolicyPreview"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_approval_api_v1_approvals__approval_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                approval_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApprovalOut"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    approve_api_v1_approvals__approval_id__approve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                approval_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApprovalDecision"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApprovalOut"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    reject_api_v1_approvals__approval_id__reject_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                approval_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectDecision"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApprovalOut"];
                 };
             };
             /** @description Client error */
@@ -3930,6 +4580,132 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SimulationOut"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_remediations_api_v1_remediations_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RemediationList"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_remediation_api_v1_remediations_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Unique key per logical operation; retries with the same key are safe. */
+                "Idempotency-Key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RemediationCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RemediationOut"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_remediation_api_v1_remediations__execution_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                execution_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RemediationOut"];
                 };
             };
             /** @description Client error */

@@ -217,3 +217,24 @@ def _drain_registry(app_engine: Engine, app_settings: Settings) -> None:
 def drain_jobs() -> int:
     """Run queued jobs inline (the test equivalent of the worker)."""
     return drain(DRAIN["factory"], DRAIN["settings"])
+
+
+@pytest.fixture(scope="module")
+def fresh_demo_tenant(app_database_url: str) -> Iterator[TenantUsers]:
+    """Demo tenant whose inventory was just observed (so freshness checks pass)."""
+    engine = create_engine(app_database_url)
+    factory = sessionmaker(bind=engine, expire_on_commit=False)
+    settings = Settings(
+        database_url=SecretStr(app_database_url), environment="test", _env_file=None
+    )
+    with factory() as session:
+        users = create_tenant(session, ("viewer", "analyst", "approver", "auditor", "admin"))
+    load_demo(factory, settings, users.tenant_id, DEMO_END)
+    with factory() as session:
+        session.execute(
+            text("UPDATE resource_inventory SET observed_at = now() WHERE tenant_id = :t"),
+            {"t": users.tenant_id},
+        )
+        session.commit()
+    yield users
+    engine.dispose()

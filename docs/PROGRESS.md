@@ -290,3 +290,37 @@ The demo spike yields a completed deterministic report: "8 new c5.4xlarge resour
 search, environment dev, account 333333333333) … add 130.56/day", high confidence, all
 citations resolvable. Tests cover malformed output, unavailable provider, prompt-injected
 output, step budget, cancellation, cross-tenant tool calls, and read-only enforcement.
+
+---
+
+## Phase 6 — Approvals, policy engine, and safe remediation
+
+**Status: complete.** Details: [remediation.md](remediation.md).
+
+### Implemented
+
+- Action registry with exactly one action, `simulate_stop_nonprod_instance`; strict payload schema.
+- Policy engine (10 checks) evaluated at request, approval, and pre-execution; impact preview
+  and rollback plan for every request.
+- Approval state machine with expiry, rejection, separation of duties, payload-hash binding,
+  tenant ownership, replay prevention; recommendation status follows the approval.
+- Simulation adapter (migration `0004_simulation_state`), job-based execution with
+  revalidation, verification, retries, idempotent crash recovery.
+- Endpoints: `GET /actions`, `POST /approvals/preview`, `POST /approvals`, `GET /approvals`,
+  `GET /approvals/{id}`, `POST /approvals/{id}/approve`, `POST /approvals/{id}/reject`,
+  `POST /remediations`, `GET /remediations`, `GET /remediations/{id}`.
+
+### Verification
+
+| Command | Result |
+| --- | --- |
+| `uv run pytest` | **187 passed** |
+| `alembic upgrade head` + `alembic check` | no drift |
+
+Tests: full flow, six policy denials, unauthorized approval, self-approval, tampered hash,
+tampered stored payload, expiry, duplicate execution, stale inventory, state change before
+approval, missing rollback plan, rejection, worker crash/retry.
+
+### Known limitations
+
+- No real AWS write adapter exists (by design); the documented preconditions apply first.

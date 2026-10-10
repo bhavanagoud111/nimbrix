@@ -10,6 +10,7 @@ from nimbrix_api.models.control import (
     AuditEvent,
     IdempotencyRecord,
     RemediationExecution,
+    SimulatedResourceState,
 )
 from nimbrix_api.models.inventory import ResourceInventory
 from nimbrix_api.models.jobs import ImportFile, Job
@@ -36,6 +37,7 @@ __all__ = [
     "ResourceInventory",
     "Role",
     "Session",
+    "SimulatedResourceState",
     "Tenant",
     "User",
 ]

@@ -127,9 +127,11 @@ def test_policy_review_is_read_only_and_honest(
     assert idle[0]["policy_allowed"] is False
     assert any("observed" in r for r in idle[0]["policy_denial_reasons"])
     assert analyst.get("/api/v1/audit-events").status_code == 403  # analyst cannot read audit
-    assert not list(client_for(demo_tenant.emails["auditor"])
+    assert not list(
+        client_for(demo_tenant.emails["auditor"])
         .get("/api/v1/audit-events?event_type=approval")
-        .json()["items"])
+        .json()["items"]
+    )
 
 
 def test_llm_mode_is_labeled_and_tracked(
