@@ -97,8 +97,9 @@ test-web: ## Frontend unit/component tests (Vitest)
 test: test-api test-integration test-web ## All unit and integration tests
 
 .PHONY: e2e
-e2e: ## Playwright E2E tests against the running stack (make up first)
-	npx playwright test
+e2e: ## Playwright E2E tests against the running demo stack (make demo first)
+	@$(LOAD_ENV) scripts/wait-for-demo.sh
+	@$(LOAD_ENV) npx playwright test
 
 .PHONY: contracts
 contracts: ## Export OpenAPI from the API and regenerate TypeScript types

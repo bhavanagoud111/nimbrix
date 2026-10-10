@@ -1,22 +1,25 @@
 import { expect, test } from "@playwright/test";
 
-test("root redirects to a live system status page", async ({ page }) => {
-  await page.goto("/");
-  await expect(page).toHaveURL(/\/status$/);
+test("status page is public and shows live readiness", async ({ page }) => {
+  await page.context().clearCookies();
+  await page.goto("/status");
   await expect(page.getByRole("heading", { name: "System status" })).toBeVisible();
-  await expect(page.getByText("Simulation mode · no cloud connections")).toBeVisible();
-
+  await expect(page.getByText("Simulation mode · no cloud changes")).toBeVisible();
   const readiness = page.getByRole("region", { name: "Service readiness" });
   await expect(readiness.getByText("Ready", { exact: true })).toBeVisible();
   await expect(readiness.getByText("Connected")).toBeVisible();
   await expect(readiness.getByText("Up to date")).toBeVisible();
-  await expect(readiness.getByText("simulation_only")).toBeVisible();
+});
+
+test("unauthenticated users are sent to login with a safe return path", async ({ page }) => {
+  await page.context().clearCookies();
+  await page.goto("/budgets");
+  await expect(page).toHaveURL(/\/login\?next=%2Fbudgets$/);
+  await expect(page.getByRole("heading", { name: "Sign in to Nimbrix" })).toBeVisible();
 });
 
 test("API is reachable through the same-origin proxy with correlation IDs", async ({ request }) => {
-  const response = await request.get("/api/v1/health/live", {
-    headers: { "x-request-id": "e2e-request-0001" },
-  });
+  const response = await request.get("/api/v1/health/live", { headers: { "x-request-id": "e2e-request-0001" } });
   expect(response.status()).toBe(200);
   expect(response.headers()["x-request-id"]).toBe("e2e-request-0001");
   expect(await response.json()).toMatchObject({ status: "ok", service: "nimbrix-api" });
@@ -30,10 +33,8 @@ test("operational endpoints are not exposed through the web origin", async ({ re
   }
 });
 
-test("unknown API routes return the standard error envelope", async ({ request }) => {
-  const response = await request.get("/api/v1/does-not-exist");
-  expect(response.status()).toBe(404);
-  const body = await response.json();
-  expect(body.error).toMatchObject({ code: "not_found" });
-  expect(body.error.request_id).toEqual(expect.any(String));
+test("protected API routes fail closed without a session", async ({ request }) => {
+  const response = await request.get("/api/v1/costs/summary");
+  expect(response.status()).toBe(401);
+  expect((await response.json()).error.code).toBe("unauthenticated");
 });

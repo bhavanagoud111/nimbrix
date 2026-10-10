@@ -114,6 +114,8 @@ jobs:
     needs: [api, web]
     env:
       POSTGRES_PASSWORD: ci-only-password
+      NIMBRIX_DEMO_SEED: "true"
+      NIMBRIX_DEMO_PASSWORD: ci-demo-password
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -122,8 +124,10 @@ jobs:
           cache: npm
       - name: Validate compose file
         run: docker compose config --quiet
-      - name: Build and start the stack
+      - name: Build and start the stack (with opt-in demo seed)
         run: docker compose up -d --build --wait --wait-timeout 180
+      - name: Wait for demo import and analysis
+        run: scripts/wait-for-demo.sh http://127.0.0.1:3200 240
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - name: Playwright

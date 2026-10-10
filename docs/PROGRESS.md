@@ -324,3 +324,43 @@ approval, missing rollback plan, rejection, worker crash/retry.
 ### Known limitations
 
 - No real AWS write adapter exists (by design); the documented preconditions apply first.
+
+---
+
+## Phase 7 — Professional full-stack dashboard
+
+**Status: complete.**
+
+### Implemented
+
+- Dark-first, responsive design system (cards, stats, badges, buttons, tables, form fields,
+  loading/error/empty states, skip link, keyboard-focus styles, mobile menu).
+- Typed API client generated from OpenAPI (`openapi-fetch` + `@nimbrix/contracts`), CSRF and
+  Idempotency-Key middleware, 401 → login redirect, TanStack Query, polling for jobs,
+  investigations, and executions.
+- Pages: Login, Overview, Cost Explorer (URL-synced filters, drill-down, unit costs), Budgets
+  (create, alerts, acknowledge), Anomalies (list, detail with observed-vs-expected chart,
+  contributors, lifecycle), Forecasting (scope/horizon, interval chart, backtest table, run),
+  Recommendations (list, detail with eligibility, evidence, simulation, request/dismiss),
+  Investigation Workspace (graph progress, hypotheses with evidence anchors, proposed actions,
+  rejected model output, Markdown export, cancel), Approval Center (payload + hash, policy
+  checks, impact, rollback, approve/reject/execute, outcome, audit trail), Resource Inventory
+  (filters, detail, policy check, request), Audit Timeline (filter, pagination),
+  Integrations & Settings (demo import, CSV upload, imports with row errors, AWS connections,
+  action registry, access), public System status.
+- Demo/live/simulation/model provenance labels on every relevant view; savings always labeled
+  as estimates.
+- Next.js `proxy.ts` optimistic login redirect with a safe `next` parameter.
+
+### Verification
+
+| Command | Result |
+| --- | --- |
+| `npm test` (Vitest) | **39 passed** |
+| `npm run lint`, `tsc --noEmit`, `npm run build` | clean; 22 routes built |
+| `npx playwright test` against `make demo` stack | **12 passed** (re-run: 12 passed) |
+
+E2E covers the complete demo path (spike → anomaly → investigation → recommendation →
+simulation → approval → simulated execution → audit), policy-denied production stop,
+self-approval denial, viewer read-only behavior, backend failure with retry, login redirect,
+and unauthenticated API access.
