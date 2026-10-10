@@ -149,3 +149,42 @@ append-only audit enforced by the database.
 
 - OIDC is designed (ADR-0007) but not implemented; demo auth is blocked in production by default.
 - No user/role management API; users come from the seed.
+
+---
+
+## Phase 2 — Synthetic data and AWS cost/inventory ingestion
+
+**Status: complete.**
+
+### Implemented
+
+- Migration `0003_jobs`: `jobs` (partial unique index for active dedupe keys) and `import_files`.
+- DB-backed job queue + `nimbrix-worker` (SKIP LOCKED claims, leases, heartbeats, retry with
+  backoff, crash recovery, Prometheus metrics on :9101). Compose runs it as the `worker` service.
+- Reproducible synthetic generator (120 days, 3 accounts, 4 regions, 10 services, labeled spike,
+  idle instance, and more; see [ingestion.md](ingestion.md)).
+- Adapters: synthetic, CSV (row-level validation), AWS Cost Explorer, CUR via Athena, EC2 +
+  CloudWatch inventory, STS assume-role with external ID; `validate` and `sync` endpoints.
+- Endpoints: `POST /imports/demo`, `POST /imports/upload`, `GET /imports`, `GET /imports/{id}`,
+  `GET /jobs/{id}`, `GET /resources`, `GET /resources/{id}`, `POST /connections/aws/validate`,
+  `POST /connections/{id}/sync`.
+- Idempotent upserts with inserted/updated/unchanged/rejected accounting; checksum duplicates.
+- Opt-in seeding: `make demo` (or `NIMBRIX_DEMO_SEED=true`) seeds users and queues demo imports.
+- Fixtures in `data/fixtures/`: valid, malformed, late-arriving, empty, mixed-currency, non-UTF-8.
+
+### Verification
+
+| Command | Result |
+| --- | --- |
+| `uv run pytest` (unit + integration on PostgreSQL 16) | **100 passed** |
+| `ruff`, `ruff format --check`, `mypy --strict src tests` | clean |
+| `NIMBRIX_DEMO_SEED=true docker compose up --build --wait` | migrate + seed OK; worker imported both demo tenants (`job_succeeded` ×2) |
+| Login + `GET /imports` through the web proxy (curl) | `demo succeeded 7760 rows, 68 resources, 2026-06-12 → 2026-10-09` |
+
+AWS adapters are tested only against botocore Stubber responses. **No real AWS account was
+used**; live behavior against AWS is unverified.
+
+### Known limitations
+
+- CUR/Athena adapter has no API/UI entry point yet (needs Athena settings per connection).
+- CloudWatch memory metrics are not collected. Prices come from a reference list-price table.

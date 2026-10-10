@@ -1,0 +1,4 @@
+line_item_id,usage_start,usage_end,account_id,service,region,resource_id,usage_type,usage_quantity,usage_unit,amount,currency,tag:team,tag:environment
+li-0001,2026-09-01T00:00:00Z,2026-09-02T00:00:00Z,123456789012,AmazonEC2,us-east-1,i-0aaa000000000001,BoxUsage:m5.large,24,Hrs,2.304,USD,payments,prod
+li-0002,2026-09-01T00:00:00Z,2026-09-02T00:00:00Z,123456789012,AmazonS3,us-east-1,,TimedStorage-ByteHrs,120.5,GB-Mo,2.95,USD,data,prod
+li-0099,2026-08-31T00:00:00Z,2026-09-01T00:00:00Z,123456789012,AmazonEC2,us-east-1,i-0aaa000000000001,BoxUsage:m5.large,24,Hrs,2.304,USD,payments,prod

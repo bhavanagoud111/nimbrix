@@ -73,6 +73,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/connections/aws/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Validate a read-only AWS role (no keys are accepted or stored) */
+        post: operations["validate_aws_connection_api_v1_connections_aws_validate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/connections/{connection_id}": {
         parameters: {
             query?: never;
@@ -84,6 +101,23 @@ export interface paths {
         get: operations["get_connection_api_v1_connections__connection_id__get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connections/{connection_id}/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Queue a read-only Cost Explorer import and inventory sync */
+        post: operations["sync_aws_connection_api_v1_connections__connection_id__sync_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -124,6 +158,91 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/imports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List billing imports */
+        get: operations["list_imports_api_v1_imports_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/demo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import reproducible synthetic demo data (labeled demo, never live) */
+        post: operations["import_demo_api_v1_imports_demo_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Upload a billing CSV (validated per row by a background job) */
+        post: operations["import_upload_api_v1_imports_upload_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/{import_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Import status and row errors */
+        get: operations["get_import_api_v1_imports__import_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/jobs/{job_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Background job status */
+        get: operations["get_job_api_v1_jobs__job_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/me": {
         parameters: {
             query?: never;
@@ -150,6 +269,40 @@ export interface paths {
         };
         /** Prometheus metrics */
         get: operations["metrics_api_v1_metrics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/resources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List inventory */
+        get: operations["list_resources_api_v1_resources_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/resources/{resource_uuid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Resource with recent cost */
+        get: operations["get_resource_api_v1_resources__resource_uuid__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -218,6 +371,75 @@ export interface components {
             items: components["schemas"]["AuditEventOut"][];
             page: components["schemas"]["PageInfo"];
         };
+        /** AwsSyncRequest */
+        AwsSyncRequest: {
+            /**
+             * End
+             * Format: date
+             * @description Exclusive end date
+             */
+            end: string;
+            /**
+             * Include Inventory
+             * @default true
+             */
+            include_inventory: boolean;
+            /**
+             * Start
+             * Format: date
+             */
+            start: string;
+        };
+        /** AwsSyncResponse */
+        AwsSyncResponse: {
+            /**
+             * Import Id
+             * Format: uuid
+             */
+            import_id: string;
+            /** Jobs */
+            jobs: components["schemas"]["JobOut"][];
+        };
+        /** AwsValidateRequest */
+        AwsValidateRequest: {
+            /**
+             * Check Cost Explorer
+             * @description Also call ce:GetCostAndUsage once. AWS bills each Cost Explorer API request.
+             * @default false
+             */
+            check_cost_explorer: boolean;
+            /**
+             * Connection Id
+             * Format: uuid
+             */
+            connection_id: string;
+        };
+        /** AwsValidateResponse */
+        AwsValidateResponse: {
+            /** Checks */
+            checks: components["schemas"]["ValidationCheckOut"][];
+            /**
+             * Connection Id
+             * Format: uuid
+             */
+            connection_id: string;
+            /**
+             * Credentials Persisted
+             * @description Always false: temporary credentials are never stored
+             * @default false
+             */
+            credentials_persisted: boolean;
+            /** Status */
+            status: string;
+        };
+        /** Body_import_upload_api_v1_imports_upload_post */
+        Body_import_upload_api_v1_imports_upload_post: {
+            /**
+             * File
+             * @description CSV file, UTF-8
+             */
+            file: string;
+        };
         /**
          * CheckStatus
          * @enum {string}
@@ -283,6 +505,16 @@ export interface components {
             /** Status */
             status: string;
         };
+        /** DailyCost */
+        DailyCost: {
+            /** Amount */
+            amount: string;
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+        };
         /** DatabaseCheck */
         DatabaseCheck: {
             /**
@@ -293,6 +525,24 @@ export interface components {
             /** Latency Ms */
             latency_ms?: number | null;
             status: components["schemas"]["CheckStatus"];
+        };
+        /** DemoImportRequest */
+        DemoImportRequest: {
+            /**
+             * Days
+             * @default 120
+             */
+            days: number;
+            /**
+             * End Date
+             * @description Last day of synthetic data (UTC). Defaults to yesterday.
+             */
+            end_date?: string | null;
+            /**
+             * Seed
+             * @default 42
+             */
+            seed: number;
         };
         /**
          * Environment
@@ -326,6 +576,107 @@ export interface components {
         /** ErrorResponse */
         ErrorResponse: {
             error: components["schemas"]["ErrorBody"];
+        };
+        /** ImportList */
+        ImportList: {
+            /** Items */
+            items: components["schemas"]["ImportOut"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /** ImportOut */
+        ImportOut: {
+            /** Checksum */
+            checksum: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Details */
+            details: {
+                [key: string]: unknown;
+            };
+            /** Duplicate Of */
+            duplicate_of: string | null;
+            /** Errors */
+            errors: {
+                [key: string]: unknown;
+            }[];
+            /** Filename */
+            filename: string | null;
+            /** Finished At */
+            finished_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Job Id */
+            job_id: string | null;
+            /**
+             * Mode
+             * @description 'demo' for synthetic data, 'live' for real provider data
+             */
+            mode: string;
+            /** Period End */
+            period_end: string | null;
+            /** Period Start */
+            period_start: string | null;
+            /** Resources Upserted */
+            resources_upserted: number;
+            /** Rows Inserted */
+            rows_inserted: number;
+            /** Rows Received */
+            rows_received: number;
+            /** Rows Rejected */
+            rows_rejected: number;
+            /** Rows Unchanged */
+            rows_unchanged: number;
+            /** Rows Updated */
+            rows_updated: number;
+            /** Source */
+            source: string;
+            /** Started At */
+            started_at: string | null;
+            /** State */
+            state: string;
+        };
+        /** JobOut */
+        JobOut: {
+            /** Attempts */
+            attempts: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Error */
+            error: string | null;
+            /** Finished At */
+            finished_at: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Max Attempts */
+            max_attempts: number;
+            /** Result */
+            result: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Run After
+             * Format: date-time
+             */
+            run_after: string;
+            /** Started At */
+            started_at: string | null;
+            /** State */
+            state: string;
         };
         /** LivenessResponse */
         LivenessResponse: {
@@ -454,6 +805,125 @@ export interface components {
          * @enum {string}
          */
         RemediationMode: "simulation_only";
+        /** ResourceDetail */
+        ResourceDetail: {
+            /** Account Id */
+            account_id: string;
+            /** Attributes */
+            attributes: {
+                [key: string]: unknown;
+            };
+            /** Cost Currency */
+            cost_currency: string;
+            /** Cost Last 30 Days */
+            cost_last_30_days: string;
+            /** Currency */
+            currency: string;
+            /** Daily Cost */
+            daily_cost: components["schemas"]["DailyCost"][];
+            /** Environment */
+            environment: string | null;
+            /** Hourly Cost */
+            hourly_cost: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Mode */
+            mode: string;
+            /** Monthly Cost */
+            monthly_cost: string | null;
+            /** Name */
+            name: string | null;
+            /**
+             * Observed At
+             * Format: date-time
+             */
+            observed_at: string;
+            /** Provider */
+            provider: string;
+            /** Region */
+            region: string;
+            /** Resource Id */
+            resource_id: string;
+            /** Resource Type */
+            resource_type: string;
+            /** Source */
+            source: string;
+            /** State */
+            state: string;
+            /** Tags */
+            tags: {
+                [key: string]: unknown;
+            };
+            /** Team */
+            team: string | null;
+            /** Utilization */
+            utilization: {
+                [key: string]: unknown;
+            } | null;
+        };
+        /** ResourceList */
+        ResourceList: {
+            /** Items */
+            items: components["schemas"]["ResourceOut"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /** ResourceOut */
+        ResourceOut: {
+            /** Account Id */
+            account_id: string;
+            /** Attributes */
+            attributes: {
+                [key: string]: unknown;
+            };
+            /** Currency */
+            currency: string;
+            /** Environment */
+            environment: string | null;
+            /** Hourly Cost */
+            hourly_cost: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Mode */
+            mode: string;
+            /** Monthly Cost */
+            monthly_cost: string | null;
+            /** Name */
+            name: string | null;
+            /**
+             * Observed At
+             * Format: date-time
+             */
+            observed_at: string;
+            /** Provider */
+            provider: string;
+            /** Region */
+            region: string;
+            /** Resource Id */
+            resource_id: string;
+            /** Resource Type */
+            resource_type: string;
+            /** Source */
+            source: string;
+            /** State */
+            state: string;
+            /** Tags */
+            tags: {
+                [key: string]: unknown;
+            };
+            /** Team */
+            team: string | null;
+            /** Utilization */
+            utilization: {
+                [key: string]: unknown;
+            } | null;
+        };
         /** TenantOut */
         TenantOut: {
             /**
@@ -477,6 +947,15 @@ export interface components {
              * Format: uuid
              */
             id: string;
+        };
+        /** ValidationCheckOut */
+        ValidationCheckOut: {
+            /** Detail */
+            detail: string;
+            /** Name */
+            name: string;
+            /** Passed */
+            passed: boolean;
         };
     };
     responses: never;
@@ -692,6 +1171,48 @@ export interface operations {
             };
         };
     };
+    validate_aws_connection_api_v1_connections_aws_validate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AwsValidateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AwsValidateResponse"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     get_connection_api_v1_connections__connection_id__get: {
         parameters: {
             query?: never;
@@ -710,6 +1231,53 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ConnectionOut"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    sync_aws_connection_api_v1_connections__connection_id__sync_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Unique key per logical operation; retries with the same key are safe. */
+                "Idempotency-Key"?: string | null;
+            };
+            path: {
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AwsSyncRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AwsSyncResponse"];
                 };
             };
             /** @description Client error */
@@ -817,6 +1385,217 @@ export interface operations {
             };
         };
     };
+    list_imports_api_v1_imports_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportList"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    import_demo_api_v1_imports_demo_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Unique key per logical operation; retries with the same key are safe. */
+                "Idempotency-Key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["DemoImportRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportOut"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    import_upload_api_v1_imports_upload_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Unique key per logical operation; retries with the same key are safe. */
+                "Idempotency-Key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_import_upload_api_v1_imports_upload_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportOut"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_import_api_v1_imports__import_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                import_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportOut"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_job_api_v1_jobs__job_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobOut"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     me_api_v1_me_get: {
         parameters: {
             query?: never;
@@ -871,6 +1650,95 @@ export interface operations {
                 };
                 content: {
                     "text/plain; version=1.0.0; charset=utf-8": unknown;
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_resources_api_v1_resources_get: {
+        parameters: {
+            query?: {
+                resource_type?: string | null;
+                account_id?: string | null;
+                region?: string | null;
+                environment?: string | null;
+                team?: string | null;
+                state?: string | null;
+                /** @description Search name or resource ID */
+                q?: string | null;
+                limit?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResourceList"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_resource_api_v1_resources__resource_uuid__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                resource_uuid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResourceDetail"];
                 };
             };
             /** @description Client error */

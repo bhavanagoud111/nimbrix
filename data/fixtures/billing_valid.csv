@@ -1,0 +1,9 @@
+line_item_id,usage_start,usage_end,account_id,service,region,resource_id,usage_type,usage_quantity,usage_unit,amount,currency,tag:team,tag:environment
+li-0001,2026-09-01T00:00:00Z,2026-09-02T00:00:00Z,123456789012,AmazonEC2,us-east-1,i-0aaa000000000001,BoxUsage:m5.large,24,Hrs,2.304,USD,payments,prod
+li-0002,2026-09-01T00:00:00Z,2026-09-02T00:00:00Z,123456789012,AmazonS3,us-east-1,,TimedStorage-ByteHrs,120.5,GB-Mo,2.77,USD,data,prod
+li-0003,2026-09-01T00:00:00Z,2026-09-02T00:00:00Z,123456789012,AWSDataTransfer,us-east-1,,DataTransfer-Out-Bytes,40,GB,3.60,USD,,
+li-0004,2026-09-02T00:00:00Z,2026-09-03T00:00:00Z,123456789012,AmazonEC2,us-east-1,i-0aaa000000000001,BoxUsage:m5.large,24,Hrs,2.304,USD,payments,prod
+li-0005,2026-09-02T00:00:00Z,2026-09-03T00:00:00Z,123456789012,AmazonS3,us-east-1,,TimedStorage-ByteHrs,121.0,GB-Mo,2.78,USD,data,prod
+li-0006,2026-09-02,2026-09-03,123456789012,AWSDataTransfer,us-east-1,,DataTransfer-Out-Bytes,38,GB,3.42,USD,,
+li-0007,2026-09-02T00:00:00Z,2026-09-03T00:00:00Z,210987654321,AmazonRDS,eu-west-1,db-ABC123,InstanceUsage:db.t3.medium,24,Hrs,1.632,USD,search,staging
+li-0008,2026-09-02T00:00:00Z,2026-09-03T00:00:00Z,210987654321,AWSSupportBusiness,global,,Support,1,Unit,-5.00,USD,,

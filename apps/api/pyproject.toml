@@ -39,6 +39,7 @@ dev = [
 [project.scripts]
 nimbrix-export-openapi = "nimbrix_api.openapi_export:main"
 nimbrix-seed = "nimbrix_api.seed:main"
+nimbrix-worker = "nimbrix_api.worker:main"
 
 [build-system]
 requires = ["hatchling>=1.25"]

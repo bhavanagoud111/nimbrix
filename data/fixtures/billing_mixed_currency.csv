@@ -1,0 +1,3 @@
+line_item_id,usage_start,usage_end,account_id,service,amount,currency
+eur-1,2026-09-01T00:00:00Z,2026-09-02T00:00:00Z,123456789012,AmazonEC2,5.00,EUR
+usd-1,2026-09-01T00:00:00Z,2026-09-02T00:00:00Z,123456789012,AmazonEC2,7.00,USD

@@ -12,6 +12,7 @@ from nimbrix_api.models.control import (
     RemediationExecution,
 )
 from nimbrix_api.models.inventory import ResourceInventory
+from nimbrix_api.models.jobs import ImportFile, Job
 from nimbrix_api.models.tenancy import Membership, Role, Session, Tenant, User
 
 __all__ = [
@@ -26,7 +27,9 @@ __all__ = [
     "CostLineItem",
     "Forecast",
     "IdempotencyRecord",
+    "ImportFile",
     "Investigation",
+    "Job",
     "Membership",
     "Recommendation",
     "RemediationExecution",

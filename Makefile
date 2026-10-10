@@ -26,6 +26,10 @@ install: ## Install Python (uv) and Node (npm workspaces) dependencies
 up: .env ## Build and start postgres, migrations, API, and web
 	$(COMPOSE) up -d --build --wait
 
+.PHONY: demo
+demo: .env ## Start the stack with demo tenants, users, and synthetic data (opt-in seed)
+	NIMBRIX_DEMO_SEED=true $(COMPOSE) up -d --build --wait
+
 .PHONY: down
 down: ## Stop the stack (data volume is kept)
 	$(COMPOSE) down
