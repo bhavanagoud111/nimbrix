@@ -12,6 +12,7 @@ from nimbrix_api.api.v1 import (
     forecasts,
     health,
     imports,
+    investigations,
     jobs,
     recommendations,
     resources,
@@ -31,6 +32,7 @@ for module in (
     recommendations,
     anomalies,
     forecasts,
+    investigations,
     audit,
 ):
     api_router.include_router(module.router)

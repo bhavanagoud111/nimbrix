@@ -23,6 +23,7 @@ dependencies = [
     "opentelemetry-exporter-otlp-proto-http>=1.45.1",
     "opentelemetry-instrumentation-fastapi>=0.66b1",
     "opentelemetry-instrumentation-sqlalchemy>=0.66b1",
+    "anthropic>=1.13.0",
 ]
 
 [dependency-groups]
@@ -64,6 +65,7 @@ ignore = [
     "PLR0913", # FastAPI dependencies make long signatures normal
     "PLR2004", # magic values are fine in tests and HTTP status checks
     "PLR0917", # FastAPI endpoints take many injected positional parameters
+    "E501",    # the formatter owns line length; long string literals are allowed
 ]
 
 [tool.ruff.lint.per-file-ignores]

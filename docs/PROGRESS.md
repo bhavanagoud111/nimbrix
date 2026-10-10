@@ -258,3 +258,35 @@ zero-data responses, gap filling, month buckets, top-N grouping, unit costs, and
 
 - Metrics come from synthetic series; no real customer data was available.
 - Only spend increases are detected; drops are not flagged.
+
+---
+
+## Phase 5 — LangGraph AI investigation agents
+
+**Status: complete** (live LLM providers unverified — no credentials were used). Details: [agents.md](agents.md).
+
+### Implemented
+
+- Typed LangGraph state machine: triage → collect_evidence → forecast_context → hypothesize
+  (bounded retry) → synthesize_recommendations → policy_review → report, with five roles.
+- Read-only, tenant-scoped evidence tools in `READ ONLY` transactions; no write or cloud tools.
+- Structured Pydantic outputs with evidence-ID citations, confidence labels, and
+  `insufficient_evidence`; grounding validation against invented IDs, accounts, and amounts.
+- Provider adapters: Anthropic (official SDK, structured outputs), OpenAI and Ollama (HTTP),
+  deterministic fallback (default). Mode shown on every investigation.
+- Budgets (steps, time, LLM calls), cancellation, token/cost tracking, trace IDs, redaction.
+- Policy engine core (`modules/remediation/registry.py`) used read-only by the agents.
+- Endpoints: `POST /anomalies/{id}/investigate`, `GET /investigations`, `GET /investigations/{id}`,
+  `GET /investigations/{id}/report.md`, `POST /investigations/{id}/cancel`.
+
+### Verification
+
+| Command | Result |
+| --- | --- |
+| `uv run pytest` | **170 passed** |
+| `ruff`, `mypy --strict src tests` | clean |
+
+The demo spike yields a completed deterministic report: "8 new c5.4xlarge resources (team
+search, environment dev, account 333333333333) … add 130.56/day", high confidence, all
+citations resolvable. Tests cover malformed output, unavailable provider, prompt-injected
+output, step budget, cancellation, cross-tenant tool calls, and read-only enforcement.
