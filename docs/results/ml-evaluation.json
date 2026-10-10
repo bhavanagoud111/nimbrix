@@ -1,0 +1,80 @@
+{
+  "detector": {
+    "low": {
+      "sensitivity": "low",
+      "series": 200,
+      "labeled_events": 400,
+      "true_positives": 378,
+      "false_positives": 0,
+      "false_negatives": 22,
+      "precision": 1.0,
+      "recall": 0.945,
+      "false_positives_per_1000_days": 0.0,
+      "mean_detection_latency_days": 0.045,
+      "max_detection_latency_days": 5,
+      "largest_missed_magnitude_x_base": 0.684
+    },
+    "medium": {
+      "sensitivity": "medium",
+      "series": 200,
+      "labeled_events": 400,
+      "true_positives": 392,
+      "false_positives": 5,
+      "false_negatives": 8,
+      "precision": 0.9874,
+      "recall": 0.98,
+      "false_positives_per_1000_days": 0.167,
+      "mean_detection_latency_days": 0.026,
+      "max_detection_latency_days": 3,
+      "largest_missed_magnitude_x_base": 0.419
+    },
+    "high": {
+      "sensitivity": "high",
+      "series": 200,
+      "labeled_events": 400,
+      "true_positives": 392,
+      "false_positives": 13,
+      "false_negatives": 8,
+      "precision": 0.9679,
+      "recall": 0.98,
+      "false_positives_per_1000_days": 0.433,
+      "mean_detection_latency_days": 0.018,
+      "max_detection_latency_days": 3,
+      "largest_missed_magnitude_x_base": 0.419
+    }
+  },
+  "forecast_7d": {
+    "horizon_days": 7,
+    "interval_level": 0.8,
+    "series": 40,
+    "models": {
+      "seasonal_naive": {
+        "mae": 11.623,
+        "wape": 0.0451,
+        "coverage": 0.8333
+      },
+      "holt_winters": {
+        "mae": 8.7452,
+        "wape": 0.034,
+        "coverage": 0.8333
+      }
+    }
+  },
+  "forecast_30d": {
+    "horizon_days": 30,
+    "interval_level": 0.8,
+    "series": 40,
+    "models": {
+      "seasonal_naive": {
+        "mae": 12.4701,
+        "wape": 0.0481,
+        "coverage": 0.8333
+      },
+      "holt_winters": {
+        "mae": 9.0007,
+        "wape": 0.035,
+        "coverage": 0.8333
+      }
+    }
+  }
+}

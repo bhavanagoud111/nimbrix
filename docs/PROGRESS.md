@@ -223,3 +223,38 @@ zero-data responses, gap filling, month buckets, top-N grouping, unit costs, and
 
 - Savings use reference list prices (no RI/SP/EDP discounts).
 - Business-metric unit economics are not computed (no metric source).
+
+---
+
+## Phase 4 — ML forecasting and cost anomaly detection
+
+**Status: complete.** Details and measured results: [ml.md](ml.md).
+
+### Implemented
+
+- Versioned feature preparation (`daily-cost-v1`): missing-day handling, training-only
+  winsorization, leakage-safe splits.
+- Seasonal-naive baseline + damped Holt-Winters; rolling-origin backtests (MAE, WAPE,
+  cross-conformal interval coverage); selection only if the alternative beats the baseline.
+- 7/30-day forecasts with intervals, model/feature versions, and training window; honest
+  `insufficient_data` and limited-history labels.
+- `seasonal-residual-v1` detector with low/medium/high sensitivity, window dedupe, evidence
+  (daily values, contributors), lifecycle with audited transitions.
+- Offline labeled evaluation harness (`python -m nimbrix_api.modules.ml.evaluation`).
+- Endpoints: `GET /forecasts`, `GET /forecasts/{id}`, `POST /forecasts/run`, `GET /anomalies`,
+  `GET /anomalies/{id}`, `POST /anomalies/{id}/status`. Budget projections use forecasts.
+- Analysis pipeline (anomalies → forecasts → recommendations → budget alerts) and a daily
+  scheduler in the worker that never queues duplicate work.
+
+### Verification
+
+| Command | Result |
+| --- | --- |
+| `uv run pytest` (unit + integration on PostgreSQL 16) | **140 passed** |
+| `ruff`, `mypy --strict src tests` | clean |
+| `python -m nimbrix_api.modules.ml.evaluation` | medium sensitivity: precision 0.987, recall 0.980; Holt-Winters 30-day WAPE 3.50% vs baseline 4.81% |
+
+### Known limitations
+
+- Metrics come from synthetic series; no real customer data was available.
+- Only spend increases are detected; drops are not flagged.

@@ -3,11 +3,13 @@
 from fastapi import APIRouter
 
 from nimbrix_api.api.v1 import (
+    anomalies,
     audit,
     auth,
     budgets,
     connections,
     costs,
+    forecasts,
     health,
     imports,
     jobs,
@@ -27,6 +29,8 @@ for module in (
     costs,
     budgets,
     recommendations,
+    anomalies,
+    forecasts,
     audit,
 ):
     api_router.include_router(module.router)

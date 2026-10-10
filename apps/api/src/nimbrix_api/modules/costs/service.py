@@ -222,7 +222,7 @@ def summary(session: Session, tenant_id: uuid.UUID, filters: CostFilters) -> dic
     }
 
 
-def _grouped(
+def grouped(
     session: Session, conds: list[ColumnElement[bool]], dimension: str
 ) -> dict[str, Decimal]:
     column = DIMENSION_COLUMNS[dimension]
@@ -240,8 +240,8 @@ def _top_drivers(
     previous: Window,
     limit: int = 5,
 ) -> list[dict[str, Any]]:
-    current = _grouped(session, conditions(tenant_id, filters, window), "service")
-    before = _grouped(session, conditions(tenant_id, filters, previous), "service")
+    current = grouped(session, conditions(tenant_id, filters, window), "service")
+    before = grouped(session, conditions(tenant_id, filters, previous), "service")
     rows: list[dict[str, Any]] = [
         {
             "dimension": "service",
@@ -267,8 +267,8 @@ def breakdown(
             "dimension": dimension,
             "items": [],
         }
-    current = _grouped(session, conditions(tenant_id, filters, window), dimension)
-    previous = _grouped(session, conditions(tenant_id, filters, window.previous()), dimension)
+    current = grouped(session, conditions(tenant_id, filters, window), dimension)
+    previous = grouped(session, conditions(tenant_id, filters, window.previous()), dimension)
     total = sum(current.values(), ZERO)
     ordered = sorted(current.items(), key=lambda kv: kv[1], reverse=True)
     items = [

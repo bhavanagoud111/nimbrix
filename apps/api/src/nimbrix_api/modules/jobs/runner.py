@@ -23,6 +23,7 @@ from nimbrix_api.modules.jobs.queue import PermanentJobError, RetryableJobError
 
 logger = logging.getLogger(__name__)
 
+SCHEDULE_INTERVAL_SECONDS = 300
 WORKER_REGISTRY = CollectorRegistry(auto_describe=True)
 JOBS_PROCESSED = Counter(
     "nimbrix_jobs_processed_total",
@@ -169,7 +170,19 @@ def run_forever(session_factory: sessionmaker[Session], settings: Settings) -> N
     signal.signal(signal.SIGINT, _stop)
     start_http_server(settings.worker_metrics_port, registry=WORKER_REGISTRY)
     logger.info("worker_started", extra={"worker_id": worker_id})
+    from nimbrix_api.modules.analysis.scheduler import schedule_daily_analysis  # noqa: PLC0415
+
+    next_schedule = 0.0
     while not stop.is_set():
+        if time.monotonic() >= next_schedule:
+            try:
+                with session_factory() as session:
+                    scheduled = schedule_daily_analysis(session)
+                if scheduled:
+                    logger.info("analysis_scheduled", extra={"tenants": scheduled})
+            except OperationalError:
+                logger.exception("scheduler_database_error")
+            next_schedule = time.monotonic() + SCHEDULE_INTERVAL_SECONDS
         try:
             worked = run_one(session_factory, settings, worker_id)
         except OperationalError:

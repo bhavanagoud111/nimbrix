@@ -21,6 +21,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/anomalies": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Detected cost anomalies */
+        get: operations["list_anomalies_api_v1_anomalies_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/anomalies/{anomaly_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Anomaly with evidence */
+        get: operations["get_anomaly_api_v1_anomalies__anomaly_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/anomalies/{anomaly_id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Change anomaly status */
+        post: operations["update_anomaly_status_api_v1_anomalies__anomaly_id__status_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/audit-events": {
         parameters: {
             query?: never;
@@ -270,6 +321,57 @@ export interface paths {
         };
         /** Cost per provider usage unit */
         get: operations["cost_unit_costs_api_v1_costs_unit_costs_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/forecasts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Latest forecast per scope and horizon */
+        get: operations["list_forecasts_api_v1_forecasts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/forecasts/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Queue a forecast run */
+        post: operations["run_forecast_api_v1_forecasts_run_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/forecasts/{forecast_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** One forecast run */
+        get: operations["get_forecast_api_v1_forecasts__forecast_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -554,6 +656,78 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AnomalyList */
+        AnomalyList: {
+            /** Items */
+            items: components["schemas"]["AnomalyOut"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /** AnomalyOut */
+        AnomalyOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Currency */
+            currency: string;
+            /** Detector Version */
+            detector_version: string;
+            /** Evidence */
+            evidence: {
+                [key: string]: unknown;
+            };
+            /** Expected */
+            expected: string;
+            /**
+             * First Detected At
+             * Format: date-time
+             */
+            first_detected_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Last Detected At
+             * Format: date-time
+             */
+            last_detected_at: string;
+            /** Observed */
+            observed: string;
+            /** Scope Type */
+            scope_type: string;
+            /** Scope Value */
+            scope_value: string;
+            /** Score */
+            score: number;
+            /** Severity */
+            severity: string;
+            /** Status */
+            status: string;
+            /**
+             * Window End
+             * Format: date
+             */
+            window_end: string;
+            /**
+             * Window Start
+             * Format: date
+             */
+            window_start: string;
+        };
+        /** AnomalyStatusUpdate */
+        AnomalyStatusUpdate: {
+            /** Note */
+            note?: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "open" | "acknowledged" | "resolved" | "dismissed";
+        };
         /** AuditEventOut */
         AuditEventOut: {
             /** Actor Id */
@@ -1083,6 +1257,104 @@ export interface components {
         /** ErrorResponse */
         ErrorResponse: {
             error: components["schemas"]["ErrorBody"];
+        };
+        /** ForecastList */
+        ForecastList: {
+            /** Items */
+            items: components["schemas"]["ForecastOut"][];
+        };
+        /** ForecastOut */
+        ForecastOut: {
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Currency */
+            currency: string;
+            /** Feature Version */
+            feature_version: string;
+            /** Horizon Days */
+            horizon_days: number;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Interval Level */
+            interval_level: number;
+            /** Message */
+            message: string | null;
+            /** Metrics */
+            metrics: {
+                [key: string]: unknown;
+            };
+            /** Model Name */
+            model_name: string;
+            /** Model Version */
+            model_version: string;
+            /** Points */
+            points: components["schemas"]["ForecastPoint"][];
+            /** Scope Type */
+            scope_type: string;
+            /** Scope Value */
+            scope_value: string;
+            /**
+             * Status
+             * @description succeeded | insufficient_data | failed
+             */
+            status: string;
+            /**
+             * Training End
+             * @description Last actual day used (source data window end)
+             */
+            training_end: string | null;
+            /** Training Start */
+            training_start: string | null;
+        };
+        /** ForecastPoint */
+        ForecastPoint: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Lower */
+            lower: string;
+            /** Upper */
+            upper: string;
+            /** Yhat */
+            yhat: string;
+        };
+        /** ForecastRunRequest */
+        ForecastRunRequest: {
+            /**
+             * Currency
+             * @default USD
+             */
+            currency: string;
+            /**
+             * Horizon Days
+             * @default 30
+             * @enum {integer}
+             */
+            horizon_days: 7 | 30;
+            /**
+             * Interval Level
+             * @default 0.8
+             */
+            interval_level: number;
+            /**
+             * Scope Type
+             * @default total
+             * @enum {string}
+             */
+            scope_type: "total" | "service" | "account" | "team" | "environment" | "region";
+            /**
+             * Scope Value
+             * @default total
+             */
+            scope_value: string;
         };
         /** ImportList */
         ImportList: {
@@ -1721,6 +1993,134 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["JobOut"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_anomalies_api_v1_anomalies_get: {
+        parameters: {
+            query?: {
+                status?: string | null;
+                severity?: string | null;
+                scope_type?: string | null;
+                limit?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnomalyList"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_anomaly_api_v1_anomalies__anomaly_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                anomaly_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnomalyOut"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    update_anomaly_status_api_v1_anomalies__anomaly_id__status_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                anomaly_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnomalyStatusUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnomalyOut"];
                 };
             };
             /** @description Client error */
@@ -2471,6 +2871,130 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UnitCosts"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_forecasts_api_v1_forecasts_get: {
+        parameters: {
+            query?: {
+                scope_type?: string | null;
+                scope_value?: string | null;
+                horizon_days?: number | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ForecastList"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    run_forecast_api_v1_forecasts_run_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ForecastRunRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobOut"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_forecast_api_v1_forecasts__forecast_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                forecast_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ForecastOut"];
                 };
             };
             /** @description Client error */

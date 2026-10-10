@@ -205,15 +205,15 @@ def demo_tenant(app_database_url: str) -> Iterator[TenantUsers]:
     engine.dispose()
 
 
-_DRAIN: dict[str, Any] = {}
+DRAIN: dict[str, Any] = {}
 
 
 @pytest.fixture(autouse=True)
 def _drain_registry(app_engine: Engine, app_settings: Settings) -> None:
-    _DRAIN["factory"] = sessionmaker(bind=app_engine, expire_on_commit=False)
-    _DRAIN["settings"] = app_settings
+    DRAIN["factory"] = sessionmaker(bind=app_engine, expire_on_commit=False)
+    DRAIN["settings"] = app_settings
 
 
 def drain_jobs() -> int:
     """Run queued jobs inline (the test equivalent of the worker)."""
-    return drain(_DRAIN["factory"], _DRAIN["settings"])
+    return drain(DRAIN["factory"], DRAIN["settings"])
