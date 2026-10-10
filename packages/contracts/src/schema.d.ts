@@ -4,6 +4,92 @@
  */
 
 export interface paths {
+    "/api/v1/audit-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Append-only audit trail */
+        get: operations["list_audit_events_api_v1_audit_events_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Demo password login */
+        post: operations["login_api_v1_auth_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revoke the current session */
+        post: operations["logout_api_v1_auth_logout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List cloud connections */
+        get: operations["list_connections_api_v1_connections_get"];
+        put?: never;
+        /** Register connection metadata (read-only role reference, no keys) */
+        post: operations["create_connection_api_v1_connections_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/connections/{connection_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a connection */
+        get: operations["get_connection_api_v1_connections__connection_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/health/live": {
         parameters: {
             query?: never;
@@ -38,6 +124,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Current user, tenant, and permissions */
+        get: operations["me_api_v1_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/metrics": {
         parameters: {
             query?: never;
@@ -55,15 +158,131 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/tenants/current": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Tenant bound to the session */
+        get: operations["current_tenant_api_v1_tenants_current_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AuditEventOut */
+        AuditEventOut: {
+            /** Actor Id */
+            actor_id: string | null;
+            /** Actor Label */
+            actor_label: string | null;
+            /** Actor Type */
+            actor_type: string;
+            /** Event Type */
+            event_type: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Occurred At
+             * Format: date-time
+             */
+            occurred_at: string;
+            /** Outcome */
+            outcome: string;
+            /** Payload */
+            payload: {
+                [key: string]: unknown;
+            };
+            /** Request Id */
+            request_id: string | null;
+            /** Target Id */
+            target_id: string | null;
+            /** Target Type */
+            target_type: string | null;
+        };
+        /** AuditEventPage */
+        AuditEventPage: {
+            /** Items */
+            items: components["schemas"]["AuditEventOut"][];
+            page: components["schemas"]["PageInfo"];
+        };
         /**
          * CheckStatus
          * @enum {string}
          */
         CheckStatus: "ok" | "fail";
+        /**
+         * ConnectionCreate
+         * @description Connection metadata only. There are deliberately no credential fields.
+         */
+        ConnectionCreate: {
+            /** Account Id */
+            account_id: string;
+            /** External Id */
+            external_id?: string | null;
+            /** Name */
+            name: string;
+            /**
+             * Provider
+             * @default aws
+             * @constant
+             */
+            provider: "aws";
+            /** Regions */
+            regions?: string[];
+            /** Role Arn */
+            role_arn?: string | null;
+        };
+        /** ConnectionList */
+        ConnectionList: {
+            /** Items */
+            items: components["schemas"]["ConnectionOut"][];
+        };
+        /** ConnectionOut */
+        ConnectionOut: {
+            /** Access Mode */
+            access_mode: string;
+            /** Account Id */
+            account_id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Has External Id */
+            has_external_id: boolean;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Last Error */
+            last_error: string | null;
+            /** Last Validated At */
+            last_validated_at: string | null;
+            /** Name */
+            name: string;
+            /** Provider */
+            provider: string;
+            /** Regions */
+            regions: string[];
+            /** Role Arn */
+            role_arn: string | null;
+            /** Status */
+            status: string;
+        };
         /** DatabaseCheck */
         DatabaseCheck: {
             /**
@@ -127,6 +346,58 @@ export interface components {
              */
             version: string;
         };
+        /** LoginRequest */
+        LoginRequest: {
+            /** Email */
+            email: string;
+            /** Password */
+            password: string;
+            /** Tenant Slug */
+            tenant_slug?: string | null;
+        };
+        /** LoginResponse */
+        LoginResponse: {
+            /**
+             * Auth Method
+             * @description How the caller authenticated. Demo sessions are not OIDC.
+             */
+            auth_method: string;
+            /**
+             * Csrf Token
+             * @description Send as X-CSRF-Token on cookie-authenticated mutations
+             */
+            csrf_token: string;
+            /** Permissions */
+            permissions: components["schemas"]["Permission"][];
+            /** Role */
+            role: string;
+            /**
+             * Session Expires At
+             * Format: date-time
+             */
+            session_expires_at: string;
+            tenant: components["schemas"]["TenantOut"];
+            user: components["schemas"]["UserOut"];
+        };
+        /** MeResponse */
+        MeResponse: {
+            /**
+             * Auth Method
+             * @description How the caller authenticated. Demo sessions are not OIDC.
+             */
+            auth_method: string;
+            /** Permissions */
+            permissions: components["schemas"]["Permission"][];
+            /** Role */
+            role: string;
+            /**
+             * Session Expires At
+             * Format: date-time
+             */
+            session_expires_at: string;
+            tenant: components["schemas"]["TenantOut"];
+            user: components["schemas"]["UserOut"];
+        };
         /** MigrationCheck */
         MigrationCheck: {
             /** Current Revision */
@@ -135,6 +406,21 @@ export interface components {
             expected_revision?: string | null;
             status: components["schemas"]["CheckStatus"];
         };
+        /** PageInfo */
+        PageInfo: {
+            /** Limit */
+            limit: number;
+            /**
+             * Next Cursor
+             * @description Pass as `cursor` to fetch the next page
+             */
+            next_cursor: string | null;
+        };
+        /**
+         * Permission
+         * @enum {string}
+         */
+        Permission: "read" | "imports:write" | "budgets:write" | "analysis:run" | "anomalies:update" | "investigations:run" | "recommendations:simulate" | "recommendations:update" | "approvals:request" | "approvals:decide" | "remediations:execute" | "connections:read" | "connections:write" | "audit:read";
         /** ReadinessChecks */
         ReadinessChecks: {
             database: components["schemas"]["DatabaseCheck"];
@@ -168,6 +454,30 @@ export interface components {
          * @enum {string}
          */
         RemediationMode: "simulation_only";
+        /** TenantOut */
+        TenantOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Slug */
+            slug: string;
+        };
+        /** UserOut */
+        UserOut: {
+            /** Display Name */
+            display_name: string;
+            /** Email */
+            email: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -177,6 +487,251 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    list_audit_events_api_v1_audit_events_get: {
+        parameters: {
+            query?: {
+                event_type?: string | null;
+                target_type?: string | null;
+                target_id?: string | null;
+                limit?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditEventPage"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    login_api_v1_auth_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginResponse"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    logout_api_v1_auth_logout_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_connections_api_v1_connections_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectionList"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_connection_api_v1_connections_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Unique key per logical operation; retries with the same key are safe. */
+                "Idempotency-Key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConnectionCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectionOut"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_connection_api_v1_connections__connection_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                connection_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectionOut"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     live_api_v1_health_live_get: {
         parameters: {
             query?: never;
@@ -262,6 +817,44 @@ export interface operations {
             };
         };
     };
+    me_api_v1_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MeResponse"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     metrics_api_v1_metrics_get: {
         parameters: {
             query?: never;
@@ -278,6 +871,44 @@ export interface operations {
                 };
                 content: {
                     "text/plain; version=1.0.0; charset=utf-8": unknown;
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    current_tenant_api_v1_tenants_current_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TenantOut"];
                 };
             };
             /** @description Client error */

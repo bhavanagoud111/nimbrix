@@ -8,6 +8,7 @@ them (database URLs) carry credentials.
 
 from __future__ import annotations
 
+from decimal import Decimal
 from enum import StrEnum
 from functools import lru_cache
 from typing import Annotated, Self
@@ -35,6 +36,13 @@ class LogLevel(StrEnum):
     INFO = "INFO"
     WARNING = "WARNING"
     ERROR = "ERROR"
+
+
+class LlmProvider(StrEnum):
+    NONE = "none"
+    OPENAI = "openai"
+    ANTHROPIC = "anthropic"
+    OLLAMA = "ollama"
 
 
 class RemediationMode(StrEnum):
@@ -73,6 +81,57 @@ class Settings(BaseSettings):
         description="Must stay false: no live cloud remediation adapter exists yet.",
     )
 
+    # --- Authentication (local demo auth; OIDC is the documented production path) ---
+    demo_auth_enabled: bool = True
+    allow_demo_auth_in_production: bool = False
+    session_ttl_hours: int = Field(default=12, ge=1, le=168)
+    cookie_secure: bool | None = Field(
+        default=None, description="Secure cookie flag; defaults to true in production"
+    )
+    demo_password: SecretStr | None = Field(
+        default=None, description="Password assigned to seeded demo users (seeding only)"
+    )
+    demo_seed: bool = Field(default=False, description="Opt-in: seed demo tenants and data")
+
+    # --- Control plane -----------------------------------------------------------
+    require_distinct_approver: bool = True
+    approval_ttl_hours: int = Field(default=24, ge=1, le=720)
+    inventory_max_age_hours: int = Field(default=48, ge=1, le=24 * 30)
+
+    # --- Ingestion ---------------------------------------------------------------
+    upload_max_bytes: int = Field(default=10 * 1024 * 1024, ge=1024, le=100 * 1024 * 1024)
+    max_request_bytes: int = Field(default=12 * 1024 * 1024, ge=1024, le=200 * 1024 * 1024)
+    aws_enabled: bool = Field(default=False, description="Allow read-only AWS API calls")
+    aws_default_region: str = "us-east-1"
+
+    # --- Jobs ----------------------------------------------------------------------
+    worker_poll_interval_seconds: float = Field(default=1.0, gt=0, le=60)
+    job_lease_seconds: int = Field(default=120, ge=10, le=3600)
+    worker_metrics_port: int = Field(default=9101, ge=1024, le=65535)
+
+    # --- Investigation agents ---------------------------------------------------------
+    llm_provider: LlmProvider = LlmProvider.NONE
+    llm_model: str | None = None
+    llm_api_key: SecretStr | None = None
+    llm_base_url: str | None = None
+    llm_timeout_seconds: float = Field(default=30.0, gt=0, le=300)
+    llm_max_output_tokens: int = Field(default=1500, ge=100, le=16_000)
+    llm_input_usd_per_million_tokens: Decimal | None = None
+    llm_output_usd_per_million_tokens: Decimal | None = None
+    agent_max_steps: int = Field(default=12, ge=3, le=50)
+    agent_timeout_seconds: float = Field(default=90.0, gt=0, le=900)
+    agent_max_llm_calls: int = Field(default=4, ge=0, le=20)
+
+    # --- Abuse protection -------------------------------------------------------------
+    rate_limit_enabled: bool = True
+    rate_limit_login_per_minute: int = Field(default=10, ge=1)
+    rate_limit_requests_per_minute: int = Field(default=600, ge=1)
+
+    # --- Telemetry -----------------------------------------------------------------------
+    otel_enabled: bool = False
+    otel_exporter_otlp_endpoint: str | None = None
+    otel_service_name: str = "nimbrix-api"
+
     @model_validator(mode="before")
     @classmethod
     def _split_origins(cls, data: object) -> object:
@@ -107,7 +166,31 @@ class Settings(BaseSettings):
             )
         if self.environment is Environment.PRODUCTION and self.log_level is LogLevel.DEBUG:
             raise ValueError("DEBUG logging is not allowed in production")
+        if (
+            self.environment is Environment.PRODUCTION
+            and self.demo_auth_enabled
+            and not self.allow_demo_auth_in_production
+        ):
+            raise ValueError(
+                "demo authentication is not production-ready; configure OIDC or set "
+                "NIMBRIX_ALLOW_DEMO_AUTH_IN_PRODUCTION=true to acknowledge the risk"
+            )
+        if self.llm_provider is not LlmProvider.NONE and not self.llm_model:
+            raise ValueError("llm_model is required when llm_provider is set")
+        if (
+            self.llm_provider in (LlmProvider.OPENAI, LlmProvider.ANTHROPIC)
+            and not self.llm_api_key
+        ):
+            raise ValueError("llm_api_key is required for the configured llm_provider")
+        if self.otel_enabled and not self.otel_exporter_otlp_endpoint:
+            raise ValueError("otel_exporter_otlp_endpoint is required when otel_enabled is true")
         return self
+
+    @property
+    def secure_cookies(self) -> bool:
+        if self.cookie_secure is not None:
+            return self.cookie_secure
+        return self.environment is Environment.PRODUCTION
 
     @property
     def remediation_mode(self) -> RemediationMode:

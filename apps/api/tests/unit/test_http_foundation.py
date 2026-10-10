@@ -101,8 +101,9 @@ def test_metrics_use_route_templates(probe_app: FastAPI, client: TestClient) -> 
     assert "/api/v1/nope/12345" not in body
 
 
-def test_openapi_document_exposes_phase0_paths() -> None:
+def test_openapi_paths_are_versioned() -> None:
     document = build_openapi()
     paths = document["paths"]
     assert isinstance(paths, dict)
-    assert set(paths) == {"/api/v1/health/live", "/api/v1/health/ready", "/api/v1/metrics"}
+    assert {"/api/v1/health/live", "/api/v1/health/ready", "/api/v1/metrics"} <= set(paths)
+    assert all(path.startswith("/api/v1/") for path in paths)

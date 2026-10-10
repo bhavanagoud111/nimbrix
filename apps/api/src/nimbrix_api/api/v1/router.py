@@ -2,8 +2,9 @@
 
 from fastapi import APIRouter
 
-from nimbrix_api.api.v1 import health
+from nimbrix_api.api.v1 import audit, auth, connections, health
 from nimbrix_api.core.errors import ERROR_RESPONSES
 
 api_router = APIRouter(responses=ERROR_RESPONSES)
-api_router.include_router(health.router)
+for module in (health, auth, connections, audit):
+    api_router.include_router(module.router)

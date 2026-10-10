@@ -3,7 +3,7 @@
 | Phase | Name | Status | Date |
 | --- | --- | --- | --- |
 | 0 | Discovery, design, and engineering foundation | ✅ Complete | 2026-10-10 |
-| 1 | Data model, API foundation, authentication, tenancy | ⏸ Awaiting approval | — |
+| 1 | Data model, API foundation, authentication, tenancy | ✅ Complete | 2026-10-10 |
 | 2 | Synthetic data and AWS cost/inventory ingestion | Not started | — |
 | 3 | Cost analytics, budgets, optimization rules | Not started | — |
 | 4 | ML forecasting and cost anomaly detection | Not started | — |
@@ -94,7 +94,7 @@ was run locally, but it has **not executed on GitHub** because nothing has been 
 - No worker process yet (Phase 2); no OpenTelemetry tracing yet (Phase 8).
 - No project license chosen yet (owner decision).
 
-### Next-phase dependencies (Phase 1)
+### Next-phase dependencies (Phase 1) — resolved
 
 - Owner approval to start Phase 1.
 - Decisions with defaults proposed for Phase 1 (will proceed with these unless told otherwise):
@@ -103,3 +103,49 @@ was run locally, but it has **not executed on GitHub** because nothing has been 
   second tenant for leakage tests; OIDC documented as the production path.
 - Builds on: `tenants` table, error envelope (`ApiError`), request IDs, the proxy header
   allowlist (will add the session cookie), and the migration test harness.
+
+---
+
+## Phase 1 — Data model, API foundation, authentication, tenancy
+
+**Status: complete.** Approved by the owner ("implement all the phases").
+
+### Implemented
+
+- Migration `0002_core_domain`: users, roles, memberships, sessions, cloud_connections,
+  billing_imports, cost_line_items, resource_inventory, budgets, budget_alerts, anomalies,
+  forecasts, recommendations, investigations, agent_runs, approval_requests,
+  remediation_executions, audit_events, idempotency_keys. UUID PKs, explicit `tenant_id`
+  on every tenant-owned table, unique constraints, composite indexes starting with
+  `tenant_id`, CHECK constraints for every status vocabulary, `NUMERIC(18,6)` money with
+  an ISO currency CHECK. A trigger makes `audit_events` append-only (UPDATE/DELETE raise).
+- Demo auth (`/auth/login`, `/auth/logout`), `/me`, `/tenants/current`; scrypt password
+  hashes; hashed, expiring, revocable sessions; CSRF token bound to each session.
+- RBAC with five roles; `require(permission)` on every endpoint; denials audited.
+- Tenant scoping from the session only; cross-tenant ID access returns 404 and is audited.
+- Connections: `GET/POST /connections`, `GET /connections/{id}` — metadata only, raw
+  key material rejected, role ARN must match account.
+- `GET /audit-events` with keyset pagination; audit writer with payload redaction.
+- Idempotency-Key enforcement and stored-response replay for mutations.
+- `nimbrix-seed`: roles, tenants `acme-demo` and `globex-demo`, users
+  `{viewer,analyst,approver,auditor,admin}@acme.demo` and `admin@globex.demo`.
+- Web proxy forwards only `nimbrix_*` cookies and `X-CSRF-Token` ([ADR-0007](adr/0007-authentication-and-tenancy.md)).
+
+### Verification
+
+| Command | Result |
+| --- | --- |
+| `uv run pytest` (unit + integration, PostgreSQL 16) | **64 passed** |
+| `uv run mypy src tests` / `ruff check` / `ruff format --check` | clean |
+| `alembic upgrade head` → `downgrade 0001` → `upgrade head` → `alembic check` | OK, no drift |
+| `npm test` (web) | **27 passed** |
+
+Key security tests: fail-closed unauthenticated access, revoked/expired sessions,
+CSRF missing/forged, RBAC matrix denials with audit, idempotency reuse (409), credential
+rejection on connections, cross-tenant 404 + audit, client tenant header ignored,
+append-only audit enforced by the database.
+
+### Known limitations
+
+- OIDC is designed (ADR-0007) but not implemented; demo auth is blocked in production by default.
+- No user/role management API; users come from the seed.

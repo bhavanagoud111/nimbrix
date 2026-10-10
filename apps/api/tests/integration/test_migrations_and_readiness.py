@@ -18,7 +18,7 @@ from sqlalchemy.exc import IntegrityError
 from nimbrix_api import models  # noqa: F401 - registers tables on Base.metadata
 from nimbrix_api.core.config import Settings
 from nimbrix_api.db.base import Base
-from nimbrix_api.db.session import Database, build_engine
+from nimbrix_api.db.session import Database, build_engine, expected_migration_head
 from nimbrix_api.main import create_app
 
 
@@ -33,13 +33,13 @@ def _ready(database_url: str, make_settings: Callable[..., Settings]) -> tuple[i
 def test_full_migration_lifecycle(
     alembic_config: Config,
     engine: Engine,
-    database_url: str,
+    fresh_database_url: str,
     make_settings: Callable[..., Settings],
 ) -> None:
     command.downgrade(alembic_config, "base")
 
     # Empty database: reachable, but migrations are not applied.
-    status, body = _ready(database_url, make_settings)
+    status, body = _ready(fresh_database_url, make_settings)
     assert status == 503
     assert body["checks"]["database"]["status"] == "ok"
     assert body["checks"]["migrations"]["current_revision"] is None
@@ -56,13 +56,14 @@ def test_full_migration_lifecycle(
     }
     assert inspector.get_pk_constraint("tenants")["name"] == "pk_tenants"
 
-    status, body = _ready(database_url, make_settings)
+    status, body = _ready(fresh_database_url, make_settings)
     assert status == 200
     assert body["status"] == "ready"
+    head = expected_migration_head()
     assert body["checks"]["migrations"] == {
         "status": "ok",
-        "current_revision": "0001_create_tenants",
-        "expected_revision": "0001_create_tenants",
+        "current_revision": head,
+        "expected_revision": head,
     }
 
     # Upgrading twice is a no-op; downgrade fully reverses the schema.

@@ -1,6 +1,12 @@
 // @vitest-environment node
 import { describe, expect, it, vi } from "vitest";
-import { apiBaseUrl, buildUpstreamPath, ProxyConfigError, proxyToApi } from "./proxy";
+import {
+  apiBaseUrl,
+  buildUpstreamPath,
+  filterCookieHeader,
+  ProxyConfigError,
+  proxyToApi,
+} from "./proxy";
 
 const env = { NIMBRIX_API_INTERNAL_URL: "http://api.internal:8000" };
 
@@ -22,6 +28,14 @@ describe("buildUpstreamPath", () => {
 
   it("percent-encodes segment content", () => {
     expect(buildUpstreamPath(["resources", "i-123 ?x"])).toBe("/api/v1/resources/i-123%20%3Fx");
+  });
+});
+
+describe("filterCookieHeader", () => {
+  it("keeps only nimbrix cookies", () => {
+    expect(filterCookieHeader("a=1; nimbrix_session=x")).toBe("nimbrix_session=x");
+    expect(filterCookieHeader("a=1")).toBeNull();
+    expect(filterCookieHeader(null)).toBeNull();
   });
 });
 
@@ -52,8 +66,9 @@ describe("proxyToApi", () => {
     const request = new Request("http://web.local/api/v1/health/live?verbose=1", {
       headers: {
         "x-request-id": "req-12345678",
-        cookie: "session=secret",
+        cookie: "other_app=secret; nimbrix_session=abc; nimbrix_csrf=def",
         authorization: "Bearer should-not-forward",
+        "x-csrf-token": "def",
       },
     });
 
@@ -68,8 +83,24 @@ describe("proxyToApi", () => {
     expect(String(url)).toBe("http://api.internal:8000/api/v1/health/live?verbose=1");
     const sent = new Headers(init?.headers);
     expect(sent.get("x-request-id")).toBe("req-12345678");
-    expect(sent.get("cookie")).toBeNull();
+    expect(sent.get("cookie")).toBe("nimbrix_session=abc; nimbrix_csrf=def");
+    expect(sent.get("x-csrf-token")).toBe("def");
     expect(sent.get("authorization")).toBeNull();
+  });
+
+  it("relays only nimbrix set-cookie headers", async () => {
+    const upstreamHeaders = new Headers();
+    upstreamHeaders.append("set-cookie", "nimbrix_session=t; HttpOnly; Path=/");
+    upstreamHeaders.append("set-cookie", "tracker=1; Path=/");
+    const fetchImpl = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(new Response("{}", { status: 200, headers: upstreamHeaders }));
+    const response = await proxyToApi(
+      new Request("http://web.local/api/v1/auth/login", { method: "POST", body: "{}" }),
+      ["auth", "login"],
+      { fetchImpl, env },
+    );
+    expect(response.headers.getSetCookie()).toEqual(["nimbrix_session=t; HttpOnly; Path=/"]);
   });
 
   it("passes request bodies for mutations", async () => {

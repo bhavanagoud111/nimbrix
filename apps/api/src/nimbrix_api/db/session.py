@@ -35,10 +35,10 @@ def build_engine(settings: Settings) -> Engine:
 class Database:
     def __init__(self, engine: Engine) -> None:
         self.engine = engine
-        self._sessions = sessionmaker(bind=engine, expire_on_commit=False)
+        self.session_factory = sessionmaker(bind=engine, expire_on_commit=False)
 
     def session(self) -> Iterator[Session]:
-        with self._sessions() as session:
+        with self.session_factory() as session:
             yield session
 
     def dispose(self) -> None:

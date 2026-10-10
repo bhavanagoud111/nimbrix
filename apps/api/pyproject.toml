@@ -13,6 +13,16 @@ dependencies = [
     "alembic>=1.14",
     "psycopg[binary]>=3.2",
     "prometheus-client>=0.21",
+    "boto3>=1.43.111",
+    "python-multipart>=0.0.32",
+    "numpy>=2.5.4",
+    "pandas>=3.0.6",
+    "statsmodels>=0.15.0",
+    "langgraph>=1.2.14",
+    "opentelemetry-sdk>=1.45.1",
+    "opentelemetry-exporter-otlp-proto-http>=1.45.1",
+    "opentelemetry-instrumentation-fastapi>=0.66b1",
+    "opentelemetry-instrumentation-sqlalchemy>=0.66b1",
 ]
 
 [dependency-groups]
@@ -22,10 +32,13 @@ dev = [
     "httpx2>=0.1",
     "ruff>=0.8",
     "mypy>=1.13",
+    "boto3-stubs[athena,ce,cloudwatch,ec2,sts]>=1.43.111",
+    "pandas-stubs>=3.0.5.260914",
 ]
 
 [project.scripts]
 nimbrix-export-openapi = "nimbrix_api.openapi_export:main"
+nimbrix-seed = "nimbrix_api.seed:main"
 
 [build-system]
 requires = ["hatchling>=1.25"]
@@ -49,11 +62,12 @@ select = [
 ignore = [
     "PLR0913", # FastAPI dependencies make long signatures normal
     "PLR2004", # magic values are fine in tests and HTTP status checks
+    "PLR0917", # FastAPI endpoints take many injected positional parameters
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101", "S105", "S106", "PLR2004"]
-"src/nimbrix_api/migrations/**" = ["N999"]
+"src/nimbrix_api/migrations/**" = ["N999", "E501", "PLR0915"]
 
 [tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "all"

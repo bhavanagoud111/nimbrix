@@ -4,8 +4,33 @@
  * No API base URL, secret, or credential is shipped in the browser bundle.
  */
 
-const FORWARDED_REQUEST_HEADERS = ["accept", "content-type", "idempotency-key", "x-request-id"];
-const FORWARDED_RESPONSE_HEADERS = ["content-type", "x-request-id", "cache-control", "retry-after"];
+const FORWARDED_REQUEST_HEADERS = [
+  "accept",
+  "content-type",
+  "idempotency-key",
+  "x-request-id",
+  "x-csrf-token",
+  "user-agent",
+];
+const FORWARDED_RESPONSE_HEADERS = [
+  "content-type",
+  "content-disposition",
+  "x-request-id",
+  "cache-control",
+  "retry-after",
+  "idempotent-replayed",
+];
+/** Only Nimbrix cookies cross the proxy, in either direction. */
+const COOKIE_PREFIX = "nimbrix_";
+
+export function filterCookieHeader(header: string | null): string | null {
+  if (!header) return null;
+  const kept = header
+    .split(";")
+    .map((part) => part.trim())
+    .filter((part) => part.startsWith(COOKIE_PREFIX));
+  return kept.length > 0 ? kept.join("; ") : null;
+}
 /** Operational endpoints that must not be reachable through the public web origin. */
 const BLOCKED_PATHS = new Set(["metrics", "openapi.json", "docs"]);
 const UPSTREAM_TIMEOUT_MS = 10_000;
@@ -72,6 +97,8 @@ export async function proxyToApi(
     const value = request.headers.get(name);
     if (value !== null) headers.set(name, value);
   }
+  const cookie = filterCookieHeader(request.headers.get("cookie"));
+  if (cookie) headers.set("cookie", cookie);
 
   const hasBody = request.method !== "GET" && request.method !== "HEAD";
   let upstream: Response;
@@ -93,6 +120,9 @@ export async function proxyToApi(
   for (const name of FORWARDED_RESPONSE_HEADERS) {
     const value = upstream.headers.get(name);
     if (value !== null) responseHeaders.set(name, value);
+  }
+  for (const setCookie of upstream.headers.getSetCookie()) {
+    if (setCookie.startsWith(COOKIE_PREFIX)) responseHeaders.append("set-cookie", setCookie);
   }
   return new Response(upstream.body, { status: upstream.status, headers: responseHeaders });
 }
