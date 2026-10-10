@@ -197,7 +197,7 @@ def demo_tenant(app_database_url: str) -> Iterator[TenantUsers]:
     factory = sessionmaker(bind=engine, expire_on_commit=False)
     settings = Settings(
         database_url=SecretStr(app_database_url), environment="test", _env_file=None
-    )  # type: ignore[arg-type]
+    )
     with factory() as session:
         users = create_tenant(session, ("viewer", "analyst", "approver", "auditor", "admin"))
     load_demo(factory, settings, users.tenant_id, DEMO_END)
