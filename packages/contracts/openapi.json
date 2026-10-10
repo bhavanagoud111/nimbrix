@@ -1,0 +1,390 @@
+{
+  "components": {
+    "schemas": {
+      "CheckStatus": {
+        "enum": [
+          "ok",
+          "fail"
+        ],
+        "title": "CheckStatus",
+        "type": "string"
+      },
+      "DatabaseCheck": {
+        "properties": {
+          "detail": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Safe, non-sensitive failure summary",
+            "title": "Detail"
+          },
+          "latency_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latency Ms"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CheckStatus"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "DatabaseCheck",
+        "type": "object"
+      },
+      "Environment": {
+        "enum": [
+          "local",
+          "test",
+          "ci",
+          "production"
+        ],
+        "title": "Environment",
+        "type": "string"
+      },
+      "ErrorBody": {
+        "properties": {
+          "code": {
+            "description": "Stable machine-readable error code",
+            "title": "Code",
+            "type": "string"
+          },
+          "details": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorDetail"
+            },
+            "title": "Details",
+            "type": "array"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ErrorBody",
+        "type": "object"
+      },
+      "ErrorDetail": {
+        "properties": {
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Dotted path of the offending input",
+            "title": "Field"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "title": "ErrorDetail",
+        "type": "object"
+      },
+      "ErrorResponse": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorBody"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "title": "ErrorResponse",
+        "type": "object"
+      },
+      "LivenessResponse": {
+        "properties": {
+          "service": {
+            "default": "nimbrix-api",
+            "title": "Service",
+            "type": "string"
+          },
+          "status": {
+            "const": "ok",
+            "default": "ok",
+            "title": "Status",
+            "type": "string"
+          },
+          "version": {
+            "default": "0.1.0",
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "title": "LivenessResponse",
+        "type": "object"
+      },
+      "MigrationCheck": {
+        "properties": {
+          "current_revision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Revision"
+          },
+          "expected_revision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CheckStatus"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "MigrationCheck",
+        "type": "object"
+      },
+      "ReadinessChecks": {
+        "properties": {
+          "database": {
+            "$ref": "#/components/schemas/DatabaseCheck"
+          },
+          "migrations": {
+            "$ref": "#/components/schemas/MigrationCheck"
+          }
+        },
+        "required": [
+          "database",
+          "migrations"
+        ],
+        "title": "ReadinessChecks",
+        "type": "object"
+      },
+      "ReadinessResponse": {
+        "properties": {
+          "checks": {
+            "$ref": "#/components/schemas/ReadinessChecks"
+          },
+          "environment": {
+            "$ref": "#/components/schemas/Environment"
+          },
+          "remediation_mode": {
+            "$ref": "#/components/schemas/RemediationMode",
+            "description": "Remediation execution mode; 'simulation_only' means no cloud writes"
+          },
+          "service": {
+            "default": "nimbrix-api",
+            "title": "Service",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "ready",
+              "not_ready"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "version": {
+            "default": "0.1.0",
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "environment",
+          "remediation_mode",
+          "checks"
+        ],
+        "title": "ReadinessResponse",
+        "type": "object"
+      },
+      "RemediationMode": {
+        "description": "How remediation actions may run. Only simulation exists today.",
+        "enum": [
+          "simulation_only"
+        ],
+        "title": "RemediationMode",
+        "type": "string"
+      }
+    }
+  },
+  "info": {
+    "description": "Cloud cost intelligence and optimization API. Remediation runs in simulation-only mode; no cloud write actions are available.",
+    "title": "Nimbrix API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/health/live": {
+      "get": {
+        "operationId": "live_api_v1_health_live_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LivenessResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Process liveness",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/api/v1/health/ready": {
+      "get": {
+        "operationId": "ready_api_v1_health_ready_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Client error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadinessResponse"
+                }
+              }
+            },
+            "description": "Dependency not ready"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Readiness: database reachable and migrations at head",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/api/v1/metrics": {
+      "get": {
+        "operationId": "metrics_api_v1_metrics_get",
+        "responses": {
+          "200": {
+            "content": {
+              "text/plain; version=1.0.0; charset=utf-8": {}
+            },
+            "description": "Prometheus text format"
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Client error"
+          },
+          "5XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            },
+            "description": "Server error"
+          }
+        },
+        "summary": "Prometheus metrics",
+        "tags": [
+          "health"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,68 @@
+# Local Nimbrix stack. No cloud credentials, no LLM keys, no paid services.
+# Host ports bind to 127.0.0.1 only; override them in .env (see .env.example).
+
+name: nimbrix
+
+x-api-environment: &api-environment
+  NIMBRIX_ENVIRONMENT: ${NIMBRIX_ENVIRONMENT:-local}
+  NIMBRIX_LOG_LEVEL: ${NIMBRIX_LOG_LEVEL:-INFO}
+  NIMBRIX_DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-nimbrix}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-nimbrix}
+  NIMBRIX_LIVE_ACTIONS_ENABLED: "false"
+
+services:
+  postgres:
+    image: postgres:16.10-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-nimbrix}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-nimbrix}
+    ports:
+      - "127.0.0.1:${NIMBRIX_POSTGRES_PORT:-5440}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  migrate:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/api.Dockerfile
+    image: nimbrix-api:local
+    command: ["alembic", "-c", "/app/alembic.ini", "upgrade", "head"]
+    environment: *api-environment
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    image: nimbrix-api:local
+    environment: *api-environment
+    ports:
+      - "127.0.0.1:${NIMBRIX_API_PORT:-8200}:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: infrastructure/docker/web.Dockerfile
+    image: nimbrix-web:local
+    environment:
+      # Server-side only: the browser talks to the web origin, which proxies /api/v1.
+      NIMBRIX_API_INTERNAL_URL: http://api:8000
+    ports:
+      - "127.0.0.1:${NIMBRIX_WEB_PORT:-3200}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres-data:

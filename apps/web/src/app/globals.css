@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+/* Dark-first palette; a light scheme is provided for users who prefer it. */
+:root {
+  --background: #0b0f14;
+  --surface: #121821;
+  --border: #233040;
+  --foreground: #e6edf3;
+  --muted: #8b9bb0;
+  --accent: #4cc2ff;
+  --ok: #3fb950;
+  --fail: #f85149;
+  --warn: #d29922;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --background: #f6f8fa;
+    --surface: #ffffff;
+    --border: #d0d7de;
+    --foreground: #1f2328;
+    --muted: #57606a;
+    --accent: #0969da;
+    --ok: #1a7f37;
+    --fail: #cf222e;
+    --warn: #9a6700;
+    color-scheme: light;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-ok: var(--ok);
+  --color-fail: var(--fail);
+  --color-warn: var(--warn);
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}

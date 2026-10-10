@@ -1,0 +1,26 @@
+{
+  "name": "nimbrix",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Nimbrix — autonomous cloud cost intelligence and optimization (monorepo root)",
+  "workspaces": [
+    "apps/web",
+    "packages/contracts"
+  ],
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "lint": "npm run lint -w @nimbrix/web",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test -w @nimbrix/web",
+    "build": "npm run build -w @nimbrix/web",
+    "contracts:generate": "npm run generate -w @nimbrix/contracts",
+    "e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.0",
+    "@types/node": "^22.20.5",
+    "typescript": "^5.9.3"
+  }
+}
