@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/api/v1/analysis/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Queue a full analysis refresh */
+        post: operations["run_analysis_api_v1_analysis_run_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/audit-events": {
         parameters: {
             query?: never;
@@ -49,6 +66,58 @@ export interface paths {
         put?: never;
         /** Revoke the current session */
         post: operations["logout_api_v1_auth_logout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/budgets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Budgets with current-month utilization */
+        get: operations["list_budgets_api_v1_budgets_get"];
+        put?: never;
+        /** Create a monthly budget */
+        post: operations["create_budget_api_v1_budgets_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/budgets/alerts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Threshold alerts */
+        get: operations["list_alerts_api_v1_budgets_alerts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/budgets/alerts/{alert_id}/acknowledge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Acknowledge an alert */
+        post: operations["acknowledge_alert_api_v1_budgets_alerts__alert_id__acknowledge_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -118,6 +187,91 @@ export interface paths {
         put?: never;
         /** Queue a read-only Cost Explorer import and inventory sync */
         post: operations["sync_aws_connection_api_v1_connections__connection_id__sync_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/costs/breakdown": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Cost by one dimension with prior-period change */
+        get: operations["cost_breakdown_api_v1_costs_breakdown_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/costs/dimensions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Filter values present in the data */
+        get: operations["cost_dimensions_api_v1_costs_dimensions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/costs/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Totals, comparisons, allocation, drivers */
+        get: operations["cost_summary_api_v1_costs_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/costs/timeseries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Cost over time, optionally grouped */
+        get: operations["cost_timeseries_api_v1_costs_timeseries_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/costs/unit-costs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Cost per provider usage unit */
+        get: operations["cost_unit_costs_api_v1_costs_unit_costs_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -271,6 +425,74 @@ export interface paths {
         get: operations["metrics_api_v1_metrics_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recommendations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List recommendations */
+        get: operations["list_recommendations_api_v1_recommendations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recommendations/{rec_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Recommendation with evidence */
+        get: operations["get_recommendation_api_v1_recommendations__rec_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recommendations/{rec_id}/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Dismiss with a reason */
+        post: operations["dismiss_recommendation_api_v1_recommendations__rec_id__dismiss_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/recommendations/{rec_id}/simulate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Estimate the cost effect of applying a recommendation (changes nothing) */
+        post: operations["simulate_recommendation_api_v1_recommendations__rec_id__simulate_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -440,6 +662,147 @@ export interface components {
              */
             file: string;
         };
+        /** BreakdownItem */
+        BreakdownItem: {
+            /** Amount */
+            amount: string;
+            /** Change Pct */
+            change_pct: string | null;
+            /** Key */
+            key: string;
+            /** Previous Amount */
+            previous_amount: string;
+            /** Share Pct */
+            share_pct: string | null;
+        };
+        /** BudgetAlertList */
+        BudgetAlertList: {
+            /** Items */
+            items: components["schemas"]["BudgetAlertOut"][];
+        };
+        /** BudgetAlertOut */
+        BudgetAlertOut: {
+            /** Amount */
+            amount: string;
+            /**
+             * Budget Id
+             * Format: uuid
+             */
+            budget_id: string;
+            /** Budget Name */
+            budget_name: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Currency */
+            currency: string;
+            /** Details */
+            details: {
+                [key: string]: unknown;
+            };
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /**
+             * Period Start
+             * Format: date
+             */
+            period_start: string;
+            /** Status */
+            status: string;
+            /** Threshold */
+            threshold: string;
+            /** Utilization */
+            utilization: string;
+        };
+        /** BudgetCreate */
+        BudgetCreate: {
+            /** Alert Thresholds */
+            alert_thresholds?: (number | string)[];
+            /** Amount */
+            amount: number | string;
+            /**
+             * Currency
+             * @default USD
+             */
+            currency: string;
+            /** Name */
+            name: string;
+            /** Owner */
+            owner?: string | null;
+            /**
+             * Scope Type
+             * @enum {string}
+             */
+            scope_type: "total" | "account" | "service" | "team" | "environment";
+            /** Scope Value */
+            scope_value?: string | null;
+        };
+        /** BudgetList */
+        BudgetList: {
+            /** Items */
+            items: components["schemas"]["BudgetOut"][];
+        };
+        /** BudgetOut */
+        BudgetOut: {
+            /** Actual */
+            actual: string;
+            /** Alert Thresholds */
+            alert_thresholds: string[];
+            /** Amount */
+            amount: string;
+            /** As Of */
+            as_of: string | null;
+            /** Currency */
+            currency: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Owner */
+            owner: string | null;
+            /** Period */
+            period: string;
+            /**
+             * Period End
+             * Format: date
+             */
+            period_end: string;
+            /**
+             * Period Start
+             * Format: date
+             */
+            period_start: string;
+            /** Projected */
+            projected: string | null;
+            /** Projected Utilization */
+            projected_utilization: string | null;
+            /**
+             * Projection Method
+             * @description forecast | run_rate
+             */
+            projection_method: string | null;
+            /** Scope Type */
+            scope_type: string;
+            /** Scope Value */
+            scope_value: string | null;
+            /**
+             * Status
+             * @description on_track | warning | at_risk | over_budget
+             */
+            status: string;
+            /** Utilization */
+            utilization: string;
+        };
         /**
          * CheckStatus
          * @enum {string}
@@ -505,6 +868,105 @@ export interface components {
             /** Status */
             status: string;
         };
+        /** CostBreakdown */
+        CostBreakdown: {
+            /** Currency */
+            currency: string;
+            /** Dimension */
+            dimension: string;
+            /** Has Data */
+            has_data: boolean;
+            /**
+             * Items
+             * @default []
+             */
+            items: components["schemas"]["BreakdownItem"][];
+            /** Total */
+            total?: string | null;
+            window?: components["schemas"]["WindowOut"] | null;
+        };
+        /** CostSummary */
+        CostSummary: {
+            /** Allocated */
+            allocated?: string | null;
+            /** Allocation Pct */
+            allocation_pct?: string | null;
+            /**
+             * As Of
+             * @description Latest complete UTC day with data
+             */
+            as_of?: string | null;
+            /** Change Pct */
+            change_pct?: string | null;
+            /** Currency */
+            currency: string;
+            /** Daily Average */
+            daily_average?: string | null;
+            /**
+             * Data Mode
+             * @description demo | live | mixed | none
+             */
+            data_mode: string;
+            /** Has Data */
+            has_data: boolean;
+            month_to_date?: components["schemas"]["MonthToDate"] | null;
+            /**
+             * Other Currencies
+             * @description Spend in other currencies, never converted or added to total
+             * @default []
+             */
+            other_currencies: components["schemas"]["CurrencyTotal"][];
+            /** Previous Total */
+            previous_total?: string | null;
+            /** Previous Window */
+            previous_window?: {
+                [key: string]: string;
+            } | null;
+            /**
+             * Top Drivers
+             * @default []
+             */
+            top_drivers: components["schemas"]["Driver"][];
+            /** Total */
+            total?: string | null;
+            /** Unallocated */
+            unallocated?: string | null;
+            window?: components["schemas"]["WindowOut"] | null;
+        };
+        /** CostTimeseries */
+        CostTimeseries: {
+            /**
+             * Buckets
+             * @default []
+             */
+            buckets: string[];
+            /** Currency */
+            currency: string;
+            /** Granularity */
+            granularity?: string | null;
+            /** Group By */
+            group_by?: string | null;
+            /** Has Data */
+            has_data: boolean;
+            /**
+             * Partial Last Bucket
+             * @default false
+             */
+            partial_last_bucket: boolean;
+            /**
+             * Series
+             * @default []
+             */
+            series: components["schemas"]["Series"][];
+            window?: components["schemas"]["WindowOut"] | null;
+        };
+        /** CurrencyTotal */
+        CurrencyTotal: {
+            /** Currency */
+            currency: string;
+            /** Total */
+            total: string;
+        };
         /** DailyCost */
         DailyCost: {
             /** Amount */
@@ -514,6 +976,15 @@ export interface components {
              * Format: date
              */
             date: string;
+        };
+        /** DataWindow */
+        DataWindow: {
+            /** As Of */
+            as_of: string | null;
+            /** End */
+            end: string | null;
+            /** Start */
+            start: string | null;
         };
         /** DatabaseCheck */
         DatabaseCheck: {
@@ -543,6 +1014,42 @@ export interface components {
              * @default 42
              */
             seed: number;
+        };
+        /** Dimensions */
+        Dimensions: {
+            /** Account */
+            account: string[];
+            /** Currencies */
+            currencies: string[];
+            data_window: components["schemas"]["DataWindow"];
+            /** Environment */
+            environment: string[];
+            /** Region */
+            region: string[];
+            /** Service */
+            service: string[];
+            /** Tag Keys */
+            tag_keys: string[];
+            /** Team */
+            team: string[];
+        };
+        /** DismissRequest */
+        DismissRequest: {
+            /** Reason */
+            reason: string;
+        };
+        /** Driver */
+        Driver: {
+            /** Amount */
+            amount: string;
+            /** Delta */
+            delta: string;
+            /** Dimension */
+            dimension: string;
+            /** Key */
+            key: string;
+            /** Previous Amount */
+            previous_amount: string;
         };
         /**
          * Environment
@@ -757,6 +1264,37 @@ export interface components {
             expected_revision?: string | null;
             status: components["schemas"]["CheckStatus"];
         };
+        /** MonthToDate */
+        MonthToDate: {
+            /** Amount */
+            amount: string;
+            /** Change Pct */
+            change_pct: string | null;
+            /** Days In Month */
+            days_in_month: number;
+            /**
+             * End
+             * Format: date
+             */
+            end: string;
+            /** Previous Amount */
+            previous_amount: string;
+            /**
+             * Previous End
+             * Format: date
+             */
+            previous_end: string;
+            /**
+             * Previous Start
+             * Format: date
+             */
+            previous_start: string;
+            /**
+             * Start
+             * Format: date
+             */
+            start: string;
+        };
         /** PageInfo */
         PageInfo: {
             /** Limit */
@@ -798,6 +1336,88 @@ export interface components {
              * @default 0.1.0
              */
             version: string;
+        };
+        /** RecommendationList */
+        RecommendationList: {
+            /** Currency */
+            currency: string;
+            /** Items */
+            items: components["schemas"]["RecommendationOut"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+            /** Total Estimated Monthly Savings */
+            total_estimated_monthly_savings: string;
+        };
+        /** RecommendationOut */
+        RecommendationOut: {
+            /** Account Id */
+            account_id: string | null;
+            /** Affected Resources */
+            affected_resources: string[];
+            /** Assumptions */
+            assumptions: string[];
+            /** Category */
+            category: string;
+            /** Confidence */
+            confidence: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Currency */
+            currency: string;
+            /** Eligibility */
+            eligibility: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Estimated Monthly Savings
+             * @description Estimated list-price reduction per month. Never a realized saving.
+             */
+            estimated_monthly_savings: string | null;
+            /** Evidence */
+            evidence: {
+                [key: string]: unknown;
+            };
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Last Evaluated At
+             * Format: date-time
+             */
+            last_evaluated_at: string;
+            /** Last Simulation */
+            last_simulation: {
+                [key: string]: unknown;
+            } | null;
+            /** Owner */
+            owner: string | null;
+            /** Proposed Action */
+            proposed_action: string | null;
+            /** Region */
+            region: string | null;
+            /** Resource Id */
+            resource_id: string | null;
+            /** Risk */
+            risk: string;
+            /** Rule Version */
+            rule_version: string;
+            /** Savings Formula */
+            savings_formula: string | null;
+            /** Status */
+            status: string;
+            /** Summary */
+            summary: string;
+            /** Title */
+            title: string;
+            /** Utilization Window */
+            utilization_window: {
+                [key: string]: unknown;
+            } | null;
         };
         /**
          * RemediationMode
@@ -924,6 +1544,82 @@ export interface components {
                 [key: string]: unknown;
             } | null;
         };
+        /** Series */
+        Series: {
+            /** Key */
+            key: string;
+            /** Points */
+            points: components["schemas"]["SeriesPoint"][];
+            /** Total */
+            total: string;
+        };
+        /** SeriesPoint */
+        SeriesPoint: {
+            /** Amount */
+            amount: string;
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+        };
+        /** SimulationOut */
+        SimulationOut: {
+            /**
+             * Assumptions
+             * @default []
+             */
+            assumptions: string[];
+            /** Basis */
+            basis?: {
+                [key: string]: unknown;
+            } | null;
+            /** Confidence */
+            confidence?: string | null;
+            /** Currency */
+            currency?: string | null;
+            /** Current Monthly Cost */
+            current_monthly_cost?: string | null;
+            /** Estimated Monthly Savings */
+            estimated_monthly_savings?: string | null;
+            /**
+             * Excluded Costs
+             * @default []
+             */
+            excluded_costs: {
+                [key: string]: unknown;
+            }[];
+            /** Message */
+            message?: string | null;
+            /**
+             * Mode
+             * @description Always 'simulation'
+             */
+            mode: string;
+            /** Projected Monthly Cost */
+            projected_monthly_cost?: string | null;
+            /**
+             * Realized
+             * @description Always false: nothing was changed
+             */
+            realized: boolean;
+            /**
+             * Recommendation Id
+             * Format: uuid
+             */
+            recommendation_id: string;
+            /** Savings Range */
+            savings_range?: {
+                [key: string]: string;
+            } | null;
+            /**
+             * Simulated At
+             * Format: date-time
+             */
+            simulated_at: string;
+            /** Status */
+            status: string;
+        };
         /** TenantOut */
         TenantOut: {
             /**
@@ -935,6 +1631,34 @@ export interface components {
             name: string;
             /** Slug */
             slug: string;
+        };
+        /** UnitCost */
+        UnitCost: {
+            /** Amount */
+            amount: string;
+            /** Service */
+            service: string;
+            /** Unit Cost */
+            unit_cost: string | null;
+            /** Usage Quantity */
+            usage_quantity: string;
+            /** Usage Unit */
+            usage_unit: string;
+        };
+        /** UnitCosts */
+        UnitCosts: {
+            /** Currency */
+            currency: string;
+            /** Has Data */
+            has_data: boolean;
+            /**
+             * Items
+             * @default []
+             */
+            items: components["schemas"]["UnitCost"][];
+            /** Note */
+            note?: string | null;
+            window?: components["schemas"]["WindowOut"] | null;
         };
         /** UserOut */
         UserOut: {
@@ -957,6 +1681,21 @@ export interface components {
             /** Passed */
             passed: boolean;
         };
+        /** WindowOut */
+        WindowOut: {
+            /** Days */
+            days: number;
+            /**
+             * End
+             * Format: date
+             */
+            end: string;
+            /**
+             * Start
+             * Format: date
+             */
+            start: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -966,6 +1705,44 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    run_analysis_api_v1_analysis_run_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobOut"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     list_audit_events_api_v1_audit_events_get: {
         parameters: {
             query?: {
@@ -1067,6 +1844,167 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_budgets_api_v1_budgets_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BudgetList"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    create_budget_api_v1_budgets_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Unique key per logical operation; retries with the same key are safe. */
+                "Idempotency-Key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BudgetCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BudgetOut"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_alerts_api_v1_budgets_alerts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BudgetAlertList"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    acknowledge_alert_api_v1_budgets_alerts__alert_id__acknowledge_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                alert_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BudgetAlertOut"];
+                };
             };
             /** @description Client error */
             "4XX": {
@@ -1278,6 +2216,261 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AwsSyncResponse"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    cost_breakdown_api_v1_costs_breakdown_get: {
+        parameters: {
+            query?: {
+                dimension?: "account" | "service" | "region" | "environment" | "team" | "resource";
+                limit?: number;
+                /** @description Inclusive UTC start date */
+                start?: string | null;
+                /** @description Inclusive UTC end date (default: latest complete day) */
+                end?: string | null;
+                account_id?: string | null;
+                service?: string | null;
+                region?: string | null;
+                /** @description '(unallocated)' for untagged */
+                environment?: string | null;
+                /** @description '(unallocated)' for untagged */
+                team?: string | null;
+                tag_key?: string | null;
+                tag_value?: string | null;
+                currency?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CostBreakdown"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    cost_dimensions_api_v1_costs_dimensions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Dimensions"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    cost_summary_api_v1_costs_summary_get: {
+        parameters: {
+            query?: {
+                /** @description Inclusive UTC start date */
+                start?: string | null;
+                /** @description Inclusive UTC end date (default: latest complete day) */
+                end?: string | null;
+                account_id?: string | null;
+                service?: string | null;
+                region?: string | null;
+                /** @description '(unallocated)' for untagged */
+                environment?: string | null;
+                /** @description '(unallocated)' for untagged */
+                team?: string | null;
+                tag_key?: string | null;
+                tag_value?: string | null;
+                currency?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CostSummary"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    cost_timeseries_api_v1_costs_timeseries_get: {
+        parameters: {
+            query?: {
+                granularity?: "day" | "month";
+                group_by?: ("account" | "service" | "region" | "environment" | "team" | "resource") | null;
+                top?: number;
+                /** @description Inclusive UTC start date */
+                start?: string | null;
+                /** @description Inclusive UTC end date (default: latest complete day) */
+                end?: string | null;
+                account_id?: string | null;
+                service?: string | null;
+                region?: string | null;
+                /** @description '(unallocated)' for untagged */
+                environment?: string | null;
+                /** @description '(unallocated)' for untagged */
+                team?: string | null;
+                tag_key?: string | null;
+                tag_value?: string | null;
+                currency?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CostTimeseries"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    cost_unit_costs_api_v1_costs_unit_costs_get: {
+        parameters: {
+            query?: {
+                /** @description Inclusive UTC start date */
+                start?: string | null;
+                /** @description Inclusive UTC end date (default: latest complete day) */
+                end?: string | null;
+                account_id?: string | null;
+                service?: string | null;
+                region?: string | null;
+                /** @description '(unallocated)' for untagged */
+                environment?: string | null;
+                /** @description '(unallocated)' for untagged */
+                team?: string | null;
+                tag_key?: string | null;
+                tag_value?: string | null;
+                currency?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UnitCosts"];
                 };
             };
             /** @description Client error */
@@ -1650,6 +2843,174 @@ export interface operations {
                 };
                 content: {
                     "text/plain; version=1.0.0; charset=utf-8": unknown;
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_recommendations_api_v1_recommendations_get: {
+        parameters: {
+            query?: {
+                status?: string | null;
+                category?: string | null;
+                include_superseded?: boolean;
+                limit?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecommendationList"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_recommendation_api_v1_recommendations__rec_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rec_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecommendationOut"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    dismiss_recommendation_api_v1_recommendations__rec_id__dismiss_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rec_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DismissRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecommendationOut"];
+                };
+            };
+            /** @description Client error */
+            "4XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Server error */
+            "5XX": {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    simulate_recommendation_api_v1_recommendations__rec_id__simulate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rec_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulationOut"];
                 };
             };
             /** @description Client error */

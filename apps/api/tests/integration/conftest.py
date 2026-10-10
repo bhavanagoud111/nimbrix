@@ -11,6 +11,8 @@ import os
 import uuid
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
+from dataclasses import dataclass
+from datetime import date
 from typing import Any
 
 import pytest
@@ -18,16 +20,21 @@ from alembic import command
 from alembic.config import Config
 from fastapi.testclient import TestClient
 from pydantic import SecretStr
-from sqlalchemy import Engine, create_engine, make_url, text
+from sqlalchemy import Engine, create_engine, make_url, select, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from nimbrix_api.core.config import Settings
+from nimbrix_api.core.security import hash_password
 from nimbrix_api.db.session import MIGRATIONS_LOCATION, Database, build_engine
 from nimbrix_api.main import create_app
+from nimbrix_api.models import Membership, Role, Tenant, User
+from nimbrix_api.modules.ingestion.requests import request_demo_import
+from nimbrix_api.modules.jobs.runner import drain
 from nimbrix_api.seed import seed_identities
 
 ADMIN_URL = os.environ.get("NIMBRIX_TEST_DATABASE_URL")
 DEMO_PASSWORD = "integration-test-password"
+DEMO_END = date(2026, 9, 30)
 
 
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
@@ -135,3 +142,78 @@ def client_for(app_settings: Settings) -> Iterator[Callable[..., TestClient]]:
 
 def idem() -> dict[str, str]:
     return {"Idempotency-Key": f"test-{uuid.uuid4().hex}"}
+
+
+@dataclass(frozen=True)
+class TenantUsers:
+    tenant_id: uuid.UUID
+    slug: str
+    emails: dict[str, str]  # role -> email
+
+
+def create_tenant(
+    session: Session, roles: tuple[str, ...] = ("viewer", "analyst", "approver", "admin")
+) -> TenantUsers:
+    """A brand-new tenant with one user per role (password DEMO_PASSWORD)."""
+    slug = f"t-{uuid.uuid4().hex[:10]}"
+    tenant = Tenant(slug=slug, name=f"Test {slug}")
+    session.add(tenant)
+    session.flush()
+    role_ids = {r.name: r.id for r in session.scalars(select(Role))}
+    emails: dict[str, str] = {}
+    password_hash = hash_password(DEMO_PASSWORD)
+    for role in roles:
+        email = f"{role}@{slug}.test"
+        user = User(
+            email=email, display_name=f"{role} {slug}", password_hash=password_hash, is_active=True
+        )
+        session.add(user)
+        session.flush()
+        session.add(Membership(tenant_id=tenant.id, user_id=user.id, role_id=role_ids[role]))
+        emails[role] = email
+    session.commit()
+    return TenantUsers(tenant_id=tenant.id, slug=slug, emails=emails)
+
+
+def load_demo(
+    factory: sessionmaker[Session],
+    settings: Settings,
+    tenant_id: uuid.UUID,
+    end_date: date,
+    days: int = 120,
+) -> None:
+    with factory() as session:
+        request_demo_import(
+            session, tenant_id=tenant_id, user_id=None, end_date=end_date, days=days, seed=42
+        )
+        session.commit()
+    drain(factory, settings)
+
+
+@pytest.fixture(scope="module")
+def demo_tenant(app_database_url: str) -> Iterator[TenantUsers]:
+    """A tenant loaded with the 120-day demo dataset ending 2026-09-30 and analyzed once."""
+    engine = create_engine(app_database_url)
+    factory = sessionmaker(bind=engine, expire_on_commit=False)
+    settings = Settings(
+        database_url=SecretStr(app_database_url), environment="test", _env_file=None
+    )  # type: ignore[arg-type]
+    with factory() as session:
+        users = create_tenant(session, ("viewer", "analyst", "approver", "auditor", "admin"))
+    load_demo(factory, settings, users.tenant_id, DEMO_END)
+    yield users
+    engine.dispose()
+
+
+_DRAIN: dict[str, Any] = {}
+
+
+@pytest.fixture(autouse=True)
+def _drain_registry(app_engine: Engine, app_settings: Settings) -> None:
+    _DRAIN["factory"] = sessionmaker(bind=app_engine, expire_on_commit=False)
+    _DRAIN["settings"] = app_settings
+
+
+def drain_jobs() -> int:
+    """Run queued jobs inline (the test equivalent of the worker)."""
+    return drain(_DRAIN["factory"], _DRAIN["settings"])

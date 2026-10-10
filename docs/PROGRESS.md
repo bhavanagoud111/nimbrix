@@ -188,3 +188,38 @@ used**; live behavior against AWS is unverified.
 
 - CUR/Athena adapter has no API/UI entry point yet (needs Athena settings per connection).
 - CloudWatch memory metrics are not collected. Prices come from a reference list-price table.
+
+---
+
+## Phase 3 — Cost analytics, budgets, and optimization rules
+
+**Status: complete.** Details: [analytics.md](analytics.md).
+
+### Implemented
+
+- `GET /costs/summary|timeseries|breakdown|unit-costs|dimensions` with account/service/region/
+  environment/team/tag/date/currency filters; UTC, month-boundary, and partial-day rules;
+  allocated vs unallocated; MTD vs previous comparable period; top cost drivers.
+- Budgets: `GET/POST /budgets`, `GET /budgets/alerts`, `POST /budgets/alerts/{id}/acknowledge`;
+  actual + projected utilization (forecast when available, else run rate); deduplicated alerts.
+- Five transparent rules (`rules-v1`) with eligibility checks, evidence, assumptions, savings
+  formula, owner, confidence, risk, and explicit `insufficient_evidence` handling.
+- `POST /recommendations/{id}/simulate` (estimated delta, range, excluded costs; labeled
+  simulation / not realized), `POST /recommendations/{id}/dismiss`, `POST /analysis/run`.
+- `analyze_tenant` job runs automatically after every successful import.
+
+### Verification
+
+| Command | Result |
+| --- | --- |
+| `uv run pytest` (unit + integration on PostgreSQL 16) | **123 passed** |
+| `ruff`, `mypy --strict src tests` | clean |
+
+Precision tests assert exact decimal sums (0.1 + 0.2 = 0.3 per day), currency separation,
+zero-data responses, gap filling, month buckets, top-N grouping, unit costs, and exact savings
+(e.g. idle `m5.2xlarge` = 0.384 × 730 = 280.32).
+
+### Known limitations
+
+- Savings use reference list prices (no RI/SP/EDP discounts).
+- Business-metric unit economics are not computed (no metric source).
