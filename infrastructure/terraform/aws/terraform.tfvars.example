@@ -1,0 +1,8 @@
+# Copy to terraform.tfvars (git-ignored) and fill in. Review every plan by hand.
+region             = "us-east-1"
+vpc_id             = "vpc-0123456789abcdef0"
+public_subnet_ids  = ["subnet-0aaa", "subnet-0bbb"]
+private_subnet_ids = ["subnet-0ccc", "subnet-0ddd"]
+certificate_arn    = "arn:aws:acm:us-east-1:123456789012:certificate/00000000-0000-0000-0000-000000000000"
+image_tag          = "0123abcd"
+# allow_demo_auth_in_production = true   # private demos only: demo auth is not production identity

@@ -12,6 +12,7 @@ from decimal import Decimal
 from enum import StrEnum
 from functools import lru_cache
 from typing import Annotated, Self
+from urllib.parse import quote
 
 from pydantic import (
     Field,
@@ -72,6 +73,15 @@ class Settings(BaseSettings):
     database_url: SecretStr = Field(
         description="SQLAlchemy URL using the psycopg (v3) driver, e.g. "
         "postgresql+psycopg://user:password@host:5432/nimbrix",
+    )
+    # Alternative to database_url (e.g. ECS secrets injection): composed when database_url is unset.
+    db_host: str | None = None
+    db_port: int = Field(default=5432, ge=1, le=65535)
+    db_name: str | None = None
+    db_user: str | None = None
+    db_password: SecretStr | None = None
+    db_sslmode: str | None = Field(
+        default=None, pattern=r"^(disable|allow|prefer|require|verify-ca|verify-full)$"
     )
     database_connect_timeout_seconds: int = Field(default=3, ge=1, le=30)
     database_statement_timeout_ms: int = Field(default=5_000, ge=100, le=600_000)
@@ -138,6 +148,8 @@ class Settings(BaseSettings):
     @model_validator(mode="before")
     @classmethod
     def _split_origins(cls, data: object) -> object:
+        if isinstance(data, dict) and not data.get("database_url") and data.get("db_host"):
+            data = {**data, "database_url": _compose_database_url(data)}
         if isinstance(data, dict):
             raw = data.get("cors_allowed_origins")
             if isinstance(raw, str):
@@ -198,6 +210,21 @@ class Settings(BaseSettings):
     @property
     def remediation_mode(self) -> RemediationMode:
         return RemediationMode.SIMULATION_ONLY
+
+
+def _compose_database_url(data: dict[str, object]) -> str:
+    def raw(key: str) -> str:
+        value = data.get(key)
+        if isinstance(value, SecretStr):
+            return value.get_secret_value()
+        return "" if value is None else str(value)
+
+    user, password = quote(raw("db_user"), safe=""), quote(raw("db_password"), safe="")
+    credentials = f"{user}:{password}@" if user else ""
+    url = f"postgresql+psycopg://{credentials}{raw('db_host')}:{raw('db_port') or 5432}/{raw('db_name') or 'nimbrix'}"
+    if raw("db_sslmode"):
+        url += f"?sslmode={raw('db_sslmode')}"
+    return url
 
 
 def describe_validation_error(exc: ValidationError) -> str:

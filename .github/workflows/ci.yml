@@ -133,6 +133,22 @@ jobs:
       - name: Node production dependencies (npm audit)
         run: npm audit --omit=dev --audit-level=high
 
+  terraform:
+    name: Terraform fmt and validate (no plan, no apply)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: infrastructure/terraform/aws
+    steps:
+      - uses: actions/checkout@v7
+      - name: fmt
+        run: docker run --rm -v "$PWD:/tf" -w /tf hashicorp/terraform:1.16.5 fmt -check -recursive
+      - name: validate
+        run: |
+          docker run --rm -v "$PWD:/tf" -w /tf hashicorp/terraform:1.16.5 init -backend=false -input=false
+          docker run --rm -v "$PWD:/tf" -w /tf hashicorp/terraform:1.16.5 validate
+
   dependency-review:
     name: Dependency review
     if: github.event_name == 'pull_request'

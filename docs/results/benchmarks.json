@@ -1,0 +1,159 @@
+{
+  "measured_at": "2026-10-11T00:04:07+00:00",
+  "host": {
+    "machine": "arm64",
+    "system": "Darwin 27.0.0",
+    "cpus": 10,
+    "docker_cpus": 10,
+    "docker_memory_gb": 7.7,
+    "docker_version": "29.8.2"
+  },
+  "workflow": {
+    "investigation_seconds": 0.85,
+    "investigation_state": "completed",
+    "investigation_steps": 7,
+    "request_approve_execute_verify_seconds": 1.15,
+    "execution_state": "succeeded",
+    "verified": true,
+    "total_seconds": 2.0
+  },
+  "forecasts": {
+    "7d": {
+      "job_seconds": 0.36,
+      "selected_model": "holt_winters",
+      "backtest": {
+        "holt_winters": {
+          "mae": 16.937,
+          "wape": 0.0641,
+          "folds": 6,
+          "failed_folds": 0,
+          "model_version": "hw-damped-additive-7d-v1",
+          "interval_coverage": 0.8333
+        },
+        "seasonal_naive": {
+          "mae": 17.3712,
+          "wape": 0.0657,
+          "folds": 6,
+          "failed_folds": 0,
+          "model_version": "seasonal-naive-7d-v1",
+          "interval_coverage": 0.8333
+        }
+      }
+    },
+    "30d": {
+      "job_seconds": 0.32,
+      "selected_model": "holt_winters",
+      "backtest": {
+        "holt_winters": {
+          "mae": 5.3127,
+          "wape": 0.0212,
+          "folds": 6,
+          "failed_folds": 0,
+          "model_version": "hw-damped-additive-7d-v1",
+          "interval_coverage": 0.8333
+        },
+        "seasonal_naive": {
+          "mae": 6.2189,
+          "wape": 0.0248,
+          "folds": 6,
+          "failed_folds": 0,
+          "model_version": "seasonal-naive-7d-v1",
+          "interval_coverage": 0.8333
+        }
+      }
+    }
+  },
+  "query_latency_acme_120d": {
+    "summary": {
+      "path": "/api/v1/costs/summary",
+      "requests": 500,
+      "concurrency": 10,
+      "status_counts": {
+        "200": 500
+      },
+      "throughput_rps": 156.7,
+      "latency_ms": {
+        "p50": 61.6,
+        "p95": 80.2,
+        "p99": 143.8,
+        "mean": 63.6
+      }
+    },
+    "timeseries_90d_by_service": {
+      "path": "/api/v1/costs/timeseries?group_by=service&top=8",
+      "requests": 500,
+      "concurrency": 10,
+      "status_counts": {
+        "200": 500
+      },
+      "throughput_rps": 157.1,
+      "latency_ms": {
+        "p50": 57.6,
+        "p95": 110.0,
+        "p99": 122.4,
+        "mean": 63.3
+      }
+    },
+    "breakdown_by_team": {
+      "path": "/api/v1/costs/breakdown?dimension=team",
+      "requests": 500,
+      "concurrency": 10,
+      "status_counts": {
+        "200": 500
+      },
+      "throughput_rps": 238.9,
+      "latency_ms": {
+        "p50": 40.3,
+        "p95": 56.1,
+        "p99": 88.3,
+        "mean": 41.7
+      }
+    },
+    "breakdown_by_resource": {
+      "path": "/api/v1/costs/breakdown?dimension=resource&limit=20",
+      "requests": 500,
+      "concurrency": 10,
+      "status_counts": {
+        "200": 500
+      },
+      "throughput_rps": 239.8,
+      "latency_ms": {
+        "p50": 40.9,
+        "p95": 53.2,
+        "p99": 61.8,
+        "mean": 41.5
+      }
+    },
+    "monthly_by_account": {
+      "path": "/api/v1/costs/timeseries?granularity=month&group_by=account&start=2026-06-01",
+      "requests": 500,
+      "concurrency": 10,
+      "status_counts": {
+        "200": 500
+      },
+      "throughput_rps": 247.7,
+      "latency_ms": {
+        "p50": 38.5,
+        "p95": 53.6,
+        "p99": 92.5,
+        "mean": 40.1
+      }
+    }
+  },
+  "ingestion_globex": {
+    "synthetic_365d": {
+      "rows": 23440,
+      "resources": 68,
+      "state": "succeeded",
+      "worker_seconds": 7.02,
+      "rows_per_second": 3339.0
+    },
+    "csv_upload": {
+      "rows": 60000,
+      "bytes": 9004329,
+      "state": "succeeded",
+      "worker_seconds": 20.64,
+      "rows_per_second": 2906.0
+    }
+  }
+}

@@ -85,3 +85,16 @@ def test_get_settings_is_cached(monkeypatch: pytest.MonkeyPatch) -> None:
         assert get_settings() is get_settings()
     finally:
         get_settings.cache_clear()
+
+
+def test_database_url_can_be_composed_from_parts(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("NIMBRIX_DB_HOST", "db.internal")
+    monkeypatch.setenv("NIMBRIX_DB_NAME", "nimbrix")
+    monkeypatch.setenv("NIMBRIX_DB_USER", "nimbrix")
+    monkeypatch.setenv("NIMBRIX_DB_PASSWORD", "p@ss:w/rd#1")
+    monkeypatch.setenv("NIMBRIX_DB_SSLMODE", "require")
+    settings = load_settings()
+    assert settings.database_url.get_secret_value() == (
+        "postgresql+psycopg://nimbrix:p%40ss%3Aw%2Frd%231@db.internal:5432/nimbrix?sslmode=require"
+    )
+    assert "p@ss" not in repr(settings)

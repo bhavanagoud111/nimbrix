@@ -34,3 +34,11 @@ blob-report/
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+.terraform.lock.hcl
+crash.log

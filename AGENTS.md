@@ -23,23 +23,29 @@ Read this before changing anything. The product and phase plan live in
 
 | Path | What |
 | --- | --- |
-| `apps/api/src/nimbrix_api/` | FastAPI app. `core/` (config, logging, errors, metrics, request IDs), `db/`, `models/`, `api/v1/`, `migrations/` |
+| `apps/api/src/nimbrix_api/` | FastAPI app + worker. `core/` (config, auth deps, errors, logging, metrics, telemetry, protection), `db/`, `models/`, `api/v1/` (routers), `modules/` (domain services: ingestion, costs, budgets, recommendations, ml, agents, remediation, jobs), `migrations/` |
 | `apps/api/tests/unit` | Fast tests, no database |
 | `apps/api/tests/integration` | Real PostgreSQL; each session creates and drops its own database |
 | `apps/web/src/` | Next.js 16 App Router. `app/` routes, `components/`, `lib/api/` (proxy + clients) |
 | `packages/contracts/` | `openapi.json` + generated `src/schema.d.ts` — **generated, do not edit by hand** |
-| `tests/e2e/` | Playwright against the running Docker stack |
+| `tests/e2e/` | Playwright against the running demo stack |
+| `tests/performance/` | Load test for cost queries |
 | `infrastructure/docker/` | Dockerfiles (build context = repo root) |
+| `infrastructure/observability/` | Prometheus + Grafana (compose profile `observability`) |
+| `infrastructure/terraform/aws/` | AWS deployment (validate only; never apply without approval) |
+| `scripts/` | demo readiness wait, reference-doc generator, benchmarks |
 
 ## Commands
 
 ```bash
 make install            # uv sync + npm ci
 make up                 # full stack via Docker Compose (web :3200, api :8200, pg :5440)
+make demo               # same, plus opt-in demo seed (users + synthetic data)
 make check              # lint + typecheck + unit/integration tests + web build
 make test-integration   # needs `make db` (or `make up`) first
-make e2e                # needs `make up` first
+make e2e                # needs `make demo` first
 make contracts          # after any API schema change; commit the result
+cd apps/api && uv run python ../../scripts/generate_reference_docs.py   # refresh docs/api.md + docs/database.md
 ```
 
 ## Backend conventions
@@ -51,6 +57,10 @@ make contracts          # after any API schema change; commit the result
 - Module routers declare the **full** `API_V1_PREFIX` themselves (see `api/v1/paths.py`);
   metrics label requests by the matched route template, which relies on it.
 - Raise `ApiError(status, code, message)` for expected failures; never return ad-hoc error JSON.
+- Every route depends on `require(permission)` (or is listed as public in `test_contracts.py`);
+  create/execute mutations take `IdempotencyKey`; tenant-owned lookups use `get_owned`.
+- Long-running work is a job (`modules/jobs`), never a slow request. Handlers register with `@register`.
+- Agents get read-only tools only; money and policy decisions stay in deterministic code.
 - Response models are explicit Pydantic classes. Never return ORM objects directly.
 - Times are UTC `timestamptz`. Money is `Decimal`/`NUMERIC` with a currency code.
 - Every schema change ships as an Alembic migration with a working `downgrade()`;

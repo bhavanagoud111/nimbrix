@@ -1,0 +1,87 @@
+{
+  "measured_at": "2026-10-11T00:05:06Z",
+  "host": {
+    "machine": "arm64",
+    "system": "Darwin",
+    "python": "3.12.12",
+    "cpus": 10
+  },
+  "target": "http://127.0.0.1:8200",
+  "results": {
+    "summary": {
+      "path": "/api/v1/costs/summary",
+      "requests": 500,
+      "concurrency": 10,
+      "status_counts": {
+        "200": 500
+      },
+      "throughput_rps": 57.4,
+      "latency_ms": {
+        "p50": 172.1,
+        "p95": 199.6,
+        "p99": 218.3,
+        "mean": 172.8
+      }
+    },
+    "timeseries_90d_by_service": {
+      "path": "/api/v1/costs/timeseries?group_by=service&top=8",
+      "requests": 500,
+      "concurrency": 10,
+      "status_counts": {
+        "200": 500
+      },
+      "throughput_rps": 130.0,
+      "latency_ms": {
+        "p50": 71.1,
+        "p95": 126.7,
+        "p99": 145.2,
+        "mean": 76.6
+      }
+    },
+    "breakdown_by_team": {
+      "path": "/api/v1/costs/breakdown?dimension=team",
+      "requests": 500,
+      "concurrency": 10,
+      "status_counts": {
+        "200": 500
+      },
+      "throughput_rps": 158.5,
+      "latency_ms": {
+        "p50": 64.5,
+        "p95": 90.4,
+        "p99": 99.6,
+        "mean": 62.8
+      }
+    },
+    "breakdown_by_resource": {
+      "path": "/api/v1/costs/breakdown?dimension=resource&limit=20",
+      "requests": 500,
+      "concurrency": 10,
+      "status_counts": {
+        "200": 500
+      },
+      "throughput_rps": 122.4,
+      "latency_ms": {
+        "p50": 74.8,
+        "p95": 127.0,
+        "p99": 140.5,
+        "mean": 81.0
+      }
+    },
+    "monthly_by_account": {
+      "path": "/api/v1/costs/timeseries?granularity=month&group_by=account&start=2026-06-01",
+      "requests": 500,
+      "concurrency": 10,
+      "status_counts": {
+        "200": 500
+      },
+      "throughput_rps": 149.0,
+      "latency_ms": {
+        "p50": 65.9,
+        "p95": 83.3,
+        "p99": 92.1,
+        "mean": 66.6
+      }
+    }
+  }
+}

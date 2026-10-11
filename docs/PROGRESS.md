@@ -263,7 +263,7 @@ zero-data responses, gap filling, month buckets, top-N grouping, unit costs, and
 
 ## Phase 5 — LangGraph AI investigation agents
 
-**Status: complete** (live LLM providers unverified — no credentials were used). Details: [agents.md](agents.md).
+**Status: complete** (live LLM providers unverified — no credentials were used). Details: [investigation-agents.md](investigation-agents.md).
 
 ### Implemented
 
@@ -407,3 +407,28 @@ and unauthenticated API access.
 
 - Rate limits are per process; tenant isolation is not backed by PostgreSQL RLS; web CSP allows inline scripts.
 - Tracing was verified with an in-memory exporter; no external collector was run.
+
+---
+
+## Phase 9 — Deployment, benchmarks, documentation, and release preparation
+
+**Status: complete, except publication** (creating/pushing a GitHub repository needs the owner's approval).
+
+### Implemented
+
+- `make demo` / `NIMBRIX_DEMO_SEED=true docker compose up --build` starts the full demo end to end;
+  seeding happens only with the opt-in flag. `scripts/wait-for-demo.sh` waits for analyzed data.
+- AWS deployment: Terraform for ECS Fargate (web, api, worker, migrate), RDS PostgreSQL 16 with an
+  RDS-managed secret, Secrets Manager, ALB (TLS 1.3, HTTP→HTTPS), Service Connect, least-privilege
+  roles and security groups; [deployment.md](deployment.md). `terraform fmt` + `validate` pass and
+  run in CI. **No plan or apply was run.** API supports composing the DB URL from injected parts.
+- Documentation: architecture refreshed to implemented state, generated API reference (55
+  endpoints) and database schema, demo script, benchmarks, deployment, plus the earlier
+  ingestion/analytics/ML/agents/remediation/security/threat-model/operations docs.
+- Benchmarks with hardware, data sizes, and methodology ([benchmarks.md](benchmarks.md)).
+- README with screenshots, implemented features, quickstart, architecture, demo, tests, measured
+  performance, limitations, roadmap, and license status.
+
+### Verification
+
+See the final verification table at the end of this file (clean checkout run).

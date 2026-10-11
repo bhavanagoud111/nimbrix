@@ -1,8 +1,8 @@
 # Nimbrix Architecture
 
-> Status: **Phase 0 baseline.** This document describes the target system and marks
-> clearly what exists today. Sections tagged _(planned — Phase N)_ are design, not
-> implemented behavior. The source of truth for decisions is [`docs/adr/`](adr/).
+> Status: **implemented through Phase 9.** Everything described here exists and is tested,
+> except items explicitly marked *not implemented* (OIDC, live cloud actions, CUR endpoint).
+> The source of truth for decisions is [`docs/adr/`](adr/).
 
 ## 1. Purpose and scope
 
@@ -35,8 +35,8 @@ flowchart LR
   FIX[Synthetic fixtures and CSV uploads] --> NX
 ```
 
-Every external dependency is optional. The default (and only Phase 0) configuration
-talks to nothing outside the local Docker network.
+Every external dependency is optional. The default configuration talks to nothing outside
+the local Docker network.
 
 ## 3. Components
 
@@ -80,17 +80,20 @@ flowchart LR
   PROM -.-> API
 ```
 
-| Component | Responsibility | Status |
+| Component | Responsibility | Code / docs |
 | --- | --- | --- |
-| Web (`apps/web`) | Next.js 16 UI; server-side proxy for `/api/v1/*` so the browser never needs the API URL or any secret | Phase 0: status page + proxy |
-| API (`apps/api`) | FastAPI modular monolith, Pydantic v2 contracts, SQLAlchemy 2, Alembic | Phase 0: health, readiness, metrics, error envelope, request IDs, config validation |
-| Worker | Separate process from the same Python package; claims DB-backed jobs | _(planned — Phase 2, see [ADR-0003](adr/0003-db-backed-jobs.md))_ |
-| PostgreSQL 16 | System of record for all tenants, billing, inventory, jobs, audit | Phase 0: `tenants` table via first migration |
-| Contracts (`packages/contracts`) | OpenAPI document exported from the API + generated TypeScript types | Phase 0: generated and drift-checked in CI |
-| Agents | LangGraph investigation graph with read-only tools and deterministic fallback | _(planned — Phase 5)_ |
-| Policy + executor | Approval state machine and allowlisted action execution (simulation first) | _(planned — Phase 6)_ |
+| Web (`apps/web`) | Next.js 16 dashboard (12 pages), typed API client, server-side proxy for `/api/v1/*` | `apps/web/src` |
+| API (`apps/api`) | FastAPI modular monolith: auth, tenancy, ingestion requests, analytics, budgets, recommendations, ML results, investigations, approvals, audit | [api.md](api.md) |
+| Worker | `nimbrix-worker`: claims DB-backed jobs (imports, analysis, forecasts, investigations, remediation), daily scheduling and retention | [ADR-0003](adr/0003-db-backed-jobs.md), [ingestion.md](ingestion.md) |
+| PostgreSQL 16 | System of record: 24 tables, append-only audit trigger | [database.md](database.md) |
+| Contracts (`packages/contracts`) | OpenAPI exported from code + generated TypeScript types | drift-checked in CI and tests |
+| Analytics | Deterministic aggregations, budgets, `rules-v1`, simulation | [analytics.md](analytics.md) |
+| ML | Seasonal-naive + Holt-Winters forecasts, `seasonal-residual-v1` anomalies | [ml.md](ml.md) |
+| Agents | LangGraph investigation graph, read-only tools, provider adapters, deterministic fallback | [investigation-agents.md](investigation-agents.md) |
+| Policy + executor | Action registry, approval state machine, simulation adapter | [remediation.md](remediation.md) |
+| Observability | Prometheus metrics, OpenTelemetry traces, Grafana dashboard | [operations.md](operations.md#observability) |
 
-### Request path (implemented in Phase 0)
+### Request path
 
 1. Browser requests `/status` from the web origin.
 2. The status component polls `GET /api/v1/health/ready` on the **same origin**.
@@ -103,7 +106,7 @@ flowchart LR
 
 ## 4. Key flows
 
-### 4.1 Ingestion _(planned — Phase 2)_
+### 4.1 Ingestion
 
 ```mermaid
 sequenceDiagram
@@ -129,7 +132,7 @@ sequenceDiagram
   A-->>W: state, counts, row-level errors
 ```
 
-### 4.2 Analysis, anomaly, and investigation _(planned — Phases 3–5)_
+### 4.2 Analysis, anomaly, and investigation
 
 ```mermaid
 sequenceDiagram
@@ -158,7 +161,7 @@ sequenceDiagram
 Dollar amounts, forecasts, and risk scores are always computed deterministically. The
 agent may only cite and explain them.
 
-### 4.3 Remediation with approval _(planned — Phase 6)_
+### 4.3 Remediation with approval
 
 ```mermaid
 sequenceDiagram
@@ -216,14 +219,14 @@ flowchart TB
   LLMO -- "TB-5: structured output validation, never authoritative" --> API
 ```
 
-| Boundary | Threats | Controls (✅ implemented · 🔜 planned) |
+| Boundary | Threats | Controls |
 | --- | --- | --- |
-| TB-1 Browser → web | XSS, CSRF, session theft | ✅ No secrets or API URL in the bundle; ✅ same-origin proxy · 🔜 secure cookies + CSRF (Phase 1/8), CSP (Phase 8) |
+| TB-1 Browser → web | XSS, CSRF, session theft | ✅ No secrets or API URL in the bundle; ✅ same-origin proxy; ✅ HttpOnly SameSite cookies + session-bound CSRF token; ✅ CSP and framing protection |
 | TB-2 Web → API | Path traversal, header smuggling, internal endpoint exposure | ✅ Segment validation, header allowlists both ways, `metrics`/`docs`/`openapi.json` blocked at the proxy, 10 s timeout |
-| API → DB | SQL injection, cross-tenant reads | ✅ SQLAlchemy parameterized queries, statement timeout · 🔜 tenant-scoped repositories enforced server-side (Phase 1) |
-| TB-3 CSV | Malicious/oversized files, formula injection | 🔜 Size limits, strict schema, no formula evaluation (Phase 2/8) |
-| TB-4 AWS | Over-privileged credentials, tag-borne prompt injection | 🔜 Explicit read-only role, no stored raw keys, tags treated as data (Phase 2) |
-| TB-5 LLM | Prompt injection, hallucinated resources or dollars | 🔜 Structured outputs citing evidence IDs, deterministic numbers, no write tools (Phase 5) |
+| API → DB | SQL injection, cross-tenant reads | ✅ Parameterized queries, statement timeout; ✅ session-bound tenant filters on every query, cross-tenant IDs → 404 + audit |
+| TB-3 CSV | Malicious/oversized files, formula injection | ✅ Body/upload size limits, strict per-row schema, values never evaluated, parsing in the worker |
+| TB-4 AWS | Over-privileged credentials, tag-borne prompt injection | ✅ Assumed read-only role with external ID, no stored keys, AWS off by default, tags treated as data |
+| TB-5 LLM | Prompt injection, hallucinated resources or dollars | ✅ Structured outputs citing evidence IDs, grounding validation, deterministic numbers, read-only tools in READ ONLY transactions |
 | Logs/telemetry | Secret or billing data leakage | ✅ JSON logs with URL-credential and key=value redaction; ✅ config errors never echo values; ✅ readiness never returns raw DB errors |
 
 ## 6. Data freshness (batch, not real time)
@@ -234,9 +237,9 @@ Nimbrix is a **batch analytics** system. It never presents data as real-time.
 | --- | --- | --- |
 | Synthetic fixtures | Instant, deterministic | Labeled `demo` everywhere |
 | CSV upload | As of the file's contents | Stored with import timestamp + checksum |
-| AWS Cost Explorer | Updated several times per day; recent days are estimates and can change | Re-ingest a trailing window; show "as of" timestamps _(Phase 2)_ |
-| AWS CUR (S3/Athena) | Delivered up to several times daily; finalized after month close | Treat current month as provisional _(Phase 2)_ |
-| CloudWatch metrics | Minutes; aggregated over a utilization window | Store window + statistic used as evidence _(Phase 2)_ |
+| AWS Cost Explorer | Updated several times per day; recent days are estimates and can change | Re-ingest a trailing window; `estimated` provenance flag; "as of" dates |
+| AWS CUR (S3/Athena) | Delivered up to several times daily; finalized after month close | Adapter implemented; no API entry point yet |
+| CloudWatch metrics | Minutes; aggregated over a utilization window | Window, statistic, and datapoint coverage stored as evidence |
 
 Late-arriving records are handled by idempotent upserts keyed on source identifiers, so
 re-imports correct prior values instead of duplicating them.
@@ -249,47 +252,53 @@ re-imports correct prior values instead of duplicating them.
 | Investigations | Deterministic fallback investigator | Configured LLM provider, still read-only |
 | Remediation | `simulate_stop_nonprod_instance` via simulation adapter | **Not implemented.** Requires a separate feature flag, narrow IAM role, resource allowlist, and approval ([ADR-0005](adr/0005-safety-policy.md)) |
 
-Phase 0 enforcement: `NIMBRIX_LIVE_ACTIONS_ENABLED=true` is **rejected at startup**,
+Enforcement: `NIMBRIX_LIVE_ACTIONS_ENABLED=true` is **rejected at startup**,
 the readiness payload reports `remediation_mode: "simulation_only"`, and the UI header
 shows "Simulation mode · no cloud connections" on every page.
 
-## 8. Deployment topology (Phase 0)
+## 8. Deployment topology (local)
 
 ```mermaid
 flowchart LR
   subgraph Host[Developer machine, 127.0.0.1 only]
     W[web :3200] --> A[api :8200]
     A --> D[(postgres :5440)]
-    M[migrate one-shot] --> D
+    K[worker :9101 metrics] --> D
+    M[migrate + opt-in seed] --> D
+    P[prometheus :9290 / grafana :3290<br/>optional profile] -.scrape.-> A & K
   end
 ```
 
 `docker compose up --build --wait` starts PostgreSQL → runs `alembic upgrade head` in a
-one-shot `migrate` container → starts the API (waits for successful migration) → starts
-the web app (waits for a healthy API). Containers run as a non-root user with health
-checks. Production deployment on AWS (ECS/Fargate, RDS, Secrets Manager) is
-_(planned — Phase 9)_ and will never be applied without explicit approval.
+one-shot `migrate` container (which seeds demo data only when `NIMBRIX_DEMO_SEED=true`) →
+starts the API and worker → starts the web app. Containers run as non-root users with health
+checks. AWS deployment (ECS Fargate, RDS, Secrets Manager) is described in
+[deployment.md](deployment.md); its Terraform is validated but never applied by this project.
 
 ## 9. Repository layout
 
 ```text
-apps/api/                 FastAPI app, Alembic migrations (packaged), tests/{unit,integration}
+apps/api/                 FastAPI app + worker, Alembic migrations (packaged), tests/{unit,integration}
 apps/web/                 Next.js app, Vitest component/unit tests
-packages/contracts/       openapi.json + generated TypeScript types (drift-checked in CI)
+packages/contracts/       openapi.json + generated TypeScript types (drift-checked)
 infrastructure/docker/    api.Dockerfile, web.Dockerfile
+infrastructure/observability/  Prometheus config, Grafana provisioning + dashboard
+infrastructure/terraform/aws/  ECS Fargate + RDS + Secrets Manager (validate-only)
+data/fixtures/            CSV test fixtures (synthetic)
+scripts/                  demo wait, reference-doc generator, benchmarks
 tests/e2e/                Playwright tests against the running stack
-docs/                     architecture, ADRs, API, security, progress
+tests/performance/        load test for cost queries
+docs/                     architecture, ADRs, API, schema, security, threat model, ops, ML, demo, results
 ```
 
 Deviations from the proposed layout, with reasons:
 
 - **`workers/`** is not a separate top-level package: the worker is a second entrypoint
   of the API package so it shares domain models, repositories, and tenant guards
-  ([ADR-0003](adr/0003-db-backed-jobs.md)). It arrives in Phase 2.
+  ([ADR-0003](adr/0003-db-backed-jobs.md)).
 - **API integration tests** live in `apps/api/tests/integration` (not root
   `tests/integration`) so they run inside the API's locked Python environment.
-  Cross-service E2E tests live in root `tests/e2e`. `tests/performance` is added in Phase 8.
-- **`infrastructure/terraform/`** is added in Phase 9.
+  Cross-service E2E tests live in root `tests/e2e`.
 
 ## 10. Engineering conventions
 
