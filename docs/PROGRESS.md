@@ -432,3 +432,31 @@ and unauthenticated API access.
 ### Verification
 
 See the final verification table at the end of this file (clean checkout run).
+
+## Final verification (clean checkout, 2026-10-10)
+
+Fresh `git clone` of commit `3dc812b` into an empty directory, `cp .env.example .env`, alternate
+ports, isolated compose project:
+
+| Step | Result |
+| --- | --- |
+| `NIMBRIX_DEMO_SEED=true docker compose up -d --build --wait` | postgres, api, worker, web healthy; migrate exited 0 |
+| `scripts/wait-for-demo.sh` | demo data imported and analyzed |
+| `uv sync --frozen`, `ruff check`, `ruff format --check`, `mypy --strict src tests` | clean |
+| `uv run pytest` (unit + integration on the clean stack's PostgreSQL) | **202 passed** |
+| `npm ci`, `npm run lint`, `npm run typecheck`, `npm test`, `npm run build` | clean; **39 passed**; build succeeded |
+| `npx playwright test` | **12 passed** |
+
+The first clean-checkout attempt failed: `apps/web/public/` was empty and therefore not in git, so
+the web image could not build. Fixed in `3dc812b` (tracked `robots.txt`); the run above is after
+the fix. GitHub Actions has not run yet because nothing has been pushed.
+
+## Overall known limitations
+
+- Demo authentication only (OIDC designed, not implemented); production startup refuses demo auth unless explicitly acknowledged.
+- No live cloud remediation (by design); AWS read adapters verified only against stubs; CUR has no API entry point.
+- LLM providers verified only against mocked responses.
+- Reference list prices; CPU-only utilization; ML metrics measured on synthetic data.
+- Application-level tenant isolation (no RLS); per-process rate limits; web CSP allows inline scripts.
+- Terraform validated but never planned or applied.
+- No license chosen; repository not published.
