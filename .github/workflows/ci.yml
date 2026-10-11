@@ -39,7 +39,7 @@ jobs:
       NIMBRIX_TEST_DATABASE_URL: postgresql+psycopg://nimbrix:ci-only-password@127.0.0.1:5432/postgres
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.3.0
         with:
           version: ${{ env.UV_VERSION }}
           enable-cache: true
@@ -91,7 +91,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.3.0
         with:
           version: ${{ env.UV_VERSION }}
           enable-cache: true
@@ -117,7 +117,7 @@ jobs:
           fetch-depth: 0
       - name: Secret scan of the full git history (gitleaks)
         run: docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.30.1 git /repo --no-banner --config /repo/.gitleaks.toml --redact
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.3.0
         with:
           version: ${{ env.UV_VERSION }}
       - name: Python runtime dependencies (pip-audit)
@@ -157,7 +157,7 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/dependency-review-action@v5
+      - uses: actions/dependency-review-action@v5.0.0
         with:
           fail-on-severity: high
 
