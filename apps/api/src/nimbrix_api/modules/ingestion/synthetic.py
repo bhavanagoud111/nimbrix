@@ -384,7 +384,8 @@ def generate(end_date: date, days: int = 120, seed: int = 42) -> DemoDataset:
     rng = random.Random(seed)  # noqa: S311 - deterministic demo data, not security
     ds = DemoDataset(end_date=end_date, days=days, seed=seed)
     provenance = {"source": "demo", "generator": GENERATOR_VERSION, "seed": seed}
-    observed_at = datetime.combine(end_date + timedelta(days=1), time(1), tzinfo=UTC)
+    # Midnight after the last day: never in the future when end_date is yesterday (the default).
+    observed_at = datetime.combine(end_date + timedelta(days=1), time(0), tzinfo=UTC)
     all_days = [ds.start_date + timedelta(days=i) for i in range(days)]
 
     for spec in INSTANCES:

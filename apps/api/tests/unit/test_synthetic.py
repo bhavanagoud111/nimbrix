@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from datetime import date, timedelta
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 
 import pytest
@@ -77,3 +77,9 @@ def test_budgets_are_sized_from_baseline(dataset: synthetic.DemoDataset) -> None
 def test_rejects_too_short_windows() -> None:
     with pytest.raises(ValueError, match="at least 30 days"):
         synthetic.generate(END, days=10)
+
+
+def test_inventory_is_never_observed_in_the_future() -> None:
+    yesterday = datetime.now(UTC).date() - timedelta(days=1)
+    dataset = synthetic.generate(yesterday, days=30)
+    assert all(r.observed_at <= datetime.now(UTC) for r in dataset.resources)
