@@ -10,6 +10,12 @@ approval** — in simulation mode, with a complete audit trail.
 The whole platform runs locally with synthetic data: no cloud account, no credentials, and no
 paid LLM key required.
 
+## Demo
+
+[![Nimbrix demo: spike → anomaly → investigation → recommendation → simulation → approval → audit](docs/media/nimbrix-demo.gif)](docs/media/nimbrix-demo.mp4)
+
+▶ [Watch the full-resolution demo video (MP4, 71 s)](docs/media/nimbrix-demo.mp4)
+
 ![Overview dashboard](docs/media/overview.png)
 
 ## Highlights
@@ -124,7 +130,7 @@ make e2e                  # Playwright against the demo stack (make demo first)
 
 | Suite | Count | Notes |
 | --- | --- | --- |
-| API unit + integration (real PostgreSQL 16) | 202 | tenancy, RBAC, CSRF, idempotency, ingestion, analytics precision, ML quality, agents, approvals, security |
+| API unit + integration (real PostgreSQL 16) | 203 | tenancy, RBAC, CSRF, idempotency, ingestion, analytics precision, ML quality, agents, approvals, security |
 | Web unit/component (Vitest) | 39 | API client, formatting, states, proxy |
 | End-to-end (Playwright) | 12 | full demo path, policy denial, self-approval denial, viewer restrictions, backend failure |
 
@@ -157,7 +163,3 @@ Full, phase-by-phase status: [docs/PROGRESS.md](docs/PROGRESS.md).
 OIDC sign-in · PostgreSQL row-level security · CUR connection settings in the UI · memory and
 network utilization signals · a reviewed live `stop_nonprod_instance` action behind its own flag
 and IAM role · materialized daily cost rollups for very large tenants.
-
-## License
-
-No license has been chosen yet; all rights reserved.

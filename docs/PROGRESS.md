@@ -92,7 +92,7 @@ was run locally, but it has **not executed on GitHub** because nothing has been 
   available; not present in the runtime image.
 - CI has not run on GitHub yet (no remote; publishing requires approval).
 - No worker process yet (Phase 2); no OpenTelemetry tracing yet (Phase 8).
-- No project license chosen yet (owner decision).
+- No license file (owner's decision).
 
 ### Next-phase dependencies (Phase 1) — resolved
 
@@ -412,7 +412,7 @@ and unauthenticated API access.
 
 ## Phase 9 — Deployment, benchmarks, documentation, and release preparation
 
-**Status: complete, except publication** (creating/pushing a GitHub repository needs the owner's approval).
+**Status: complete.** Published to GitHub with the owner's approval.
 
 ### Implemented
 
@@ -427,7 +427,7 @@ and unauthenticated API access.
   ingestion/analytics/ML/agents/remediation/security/threat-model/operations docs.
 - Benchmarks with hardware, data sizes, and methodology ([benchmarks.md](benchmarks.md)).
 - README with screenshots, implemented features, quickstart, architecture, demo, tests, measured
-  performance, limitations, roadmap, and license status.
+  performance, limitations, roadmap, and a demo video.
 
 ### Verification
 
@@ -459,4 +459,4 @@ the fix. GitHub Actions has not run yet because nothing has been pushed.
 - Reference list prices; CPU-only utilization; ML metrics measured on synthetic data.
 - Application-level tenant isolation (no RLS); per-process rate limits; web CSP allows inline scripts.
 - Terraform validated but never planned or applied.
-- No license chosen; repository not published.
+- No license file, by the owner's choice.
