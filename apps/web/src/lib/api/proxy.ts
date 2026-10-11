@@ -11,6 +11,7 @@ const FORWARDED_REQUEST_HEADERS = [
   "x-request-id",
   "x-csrf-token",
   "user-agent",
+  "x-forwarded-for",
 ];
 const FORWARDED_RESPONSE_HEADERS = [
   "content-type",

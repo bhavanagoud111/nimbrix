@@ -12,6 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 
 from nimbrix_api.core.audit import record_audit
+from nimbrix_api.core.business_metrics import INVESTIGATIONS
 from nimbrix_api.core.config import Settings
 from nimbrix_api.models import Investigation
 from nimbrix_api.modules.agents.graph import (
@@ -151,6 +152,7 @@ def execute(
             "tool_calls": len(runtime.tools.calls),
         }
         inv.finished_at = datetime.now(UTC)
+        INVESTIGATIONS.labels(state=state, mode=inv.mode).inc()
         record_audit(
             session,
             event_type=f"investigation.{state}",

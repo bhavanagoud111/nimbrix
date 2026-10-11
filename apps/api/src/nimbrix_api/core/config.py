@@ -104,6 +104,9 @@ class Settings(BaseSettings):
     aws_enabled: bool = Field(default=False, description="Allow read-only AWS API calls")
     aws_default_region: str = "us-east-1"
 
+    raw_upload_retention_days: int = Field(default=30, ge=1, le=3650)
+    session_retention_days: int = Field(default=7, ge=1, le=365)
+
     # --- Jobs ----------------------------------------------------------------------
     worker_poll_interval_seconds: float = Field(default=1.0, gt=0, le=60)
     job_lease_seconds: int = Field(default=120, ge=10, le=3600)

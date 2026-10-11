@@ -14,6 +14,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from nimbrix_api.core.audit import record_audit
+from nimbrix_api.core.business_metrics import IMPORT_LATENCY, IMPORT_ROWS
 from nimbrix_api.models import BillingImport, Budget, CostLineItem, ResourceInventory
 from nimbrix_api.modules.ingestion.records import (
     CostRecord,
@@ -263,6 +264,17 @@ def finish_import(
     billing_import.errors = [e.as_dict() for e in errors]
     billing_import.details = {**(billing_import.details or {}), **(details or {})}
     billing_import.finished_at = datetime.now(UTC)
+    if billing_import.started_at is not None:
+        IMPORT_LATENCY.labels(source=billing_import.source, state=state).observe(
+            (billing_import.finished_at - billing_import.started_at).total_seconds()
+        )
+    for result, count in (
+        ("inserted", counts.inserted),
+        ("updated", counts.updated),
+        ("unchanged", counts.unchanged),
+        ("rejected", rejected),
+    ):
+        IMPORT_ROWS.labels(source=billing_import.source, result=result).inc(count)
     record_audit(
         session,
         event_type=f"import.{state}",

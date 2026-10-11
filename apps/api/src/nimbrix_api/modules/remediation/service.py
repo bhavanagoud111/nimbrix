@@ -18,6 +18,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from nimbrix_api.core.audit import record_audit
+from nimbrix_api.core.business_metrics import APPROVAL_DECISIONS, POLICY_DENIALS, REMEDIATIONS
 from nimbrix_api.core.config import Settings
 from nimbrix_api.core.deps import AuthContext
 from nimbrix_api.core.errors import ApiError, ErrorDetail
@@ -65,6 +66,7 @@ def _audit(
 
 
 def _policy_error(result: PolicyResult, code: str = "policy_denied", status: int = 422) -> ApiError:
+    POLICY_DENIALS.labels(stage=code).inc()
     return ApiError(
         status,
         code,
@@ -297,6 +299,7 @@ def decide(
                 )
                 .values(status="open")
             )
+    APPROVAL_DECISIONS.labels(decision=approval.status).inc()
     approval.decided_by = auth.user_id
     approval.decided_at = datetime.now(UTC)
     approval.decision_reason = reason
@@ -467,6 +470,9 @@ def run_execution(
             revalidation.denial_reasons or ["payload integrity"]
         )
         execution.finished_at = now
+        REMEDIATIONS.labels(
+            action_type=approval.action_type, mode=execution.mode, state="failed"
+        ).inc()
         _audit(
             session,
             None,
@@ -506,6 +512,9 @@ def run_execution(
         "cloud_api_called": False,
     }
     execution.finished_at = datetime.now(UTC)
+    REMEDIATIONS.labels(
+        action_type=approval.action_type, mode=execution.mode, state=execution.state
+    ).inc()
     _audit(
         session,
         None,

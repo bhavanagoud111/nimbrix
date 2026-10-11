@@ -1,0 +1,10 @@
+# Secret scanning config (gitleaks). Extends the default rules.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Deliberately fake credential-shaped strings used by tests that prove keys are rejected"
+regexes = [
+  '''AKIAABCDEFGHIJKLMNOP''',
+  '''ASIAEXAMPLEEXAMPLE00''',
+]

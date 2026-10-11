@@ -24,7 +24,9 @@ from langgraph.graph import END, START, StateGraph
 from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 
+from nimbrix_api.core.business_metrics import AGENT_CALLS, AGENT_TOKENS
 from nimbrix_api.core.config import Settings
+from nimbrix_api.core.telemetry import tracer
 from nimbrix_api.models import AgentRun, Investigation
 from nimbrix_api.modules.agents import deterministic
 from nimbrix_api.modules.agents.providers import (
@@ -160,6 +162,16 @@ def _add(state: State, items: list[Evidence]) -> list[dict[str, Any]]:
 def build_graph(rt: Runtime) -> Any:  # noqa: PLR0915 - one closure per graph node
     def step(name: str, role: str, fn: Callable[[State], NodeResult]) -> Any:
         def run(state: State) -> dict[str, Any]:
+            with tracer.start_as_current_span(
+                f"agent {name}",
+                attributes={
+                    "nimbrix.agent.role": role,
+                    "nimbrix.investigation.id": str(rt.investigation_id),
+                },
+            ):
+                return run_inner(state)
+
+        def run_inner(state: State) -> dict[str, Any]:
             rt.check()
             started = time.perf_counter()
             calls_before = len(rt.tools.calls)
@@ -250,7 +262,16 @@ def build_graph(rt: Runtime) -> Any:  # noqa: PLR0915 - one closure per graph no
                 cost = result.cost_usd(rt.settings)
                 if cost is not None:
                     rt.usage["cost_usd"] = str(Decimal(rt.usage["cost_usd"] or 0) + cost)
+                AGENT_TOKENS.labels(provider=result.provider, direction="input").inc(
+                    result.input_tokens or 0
+                )
+                AGENT_TOKENS.labels(provider=result.provider, direction="output").inc(
+                    result.output_tokens or 0
+                )
                 errors = grounding_errors(result.analysis, evidence)
+                AGENT_CALLS.labels(
+                    provider=result.provider, outcome="rejected" if errors else "accepted"
+                ).inc()
                 if not errors:
                     update.update(
                         analysis=result.analysis.model_dump(),
@@ -267,6 +288,7 @@ def build_graph(rt: Runtime) -> Any:  # noqa: PLR0915 - one closure per graph no
                 rejected += [f"attempt {attempts}: {e}" for e in errors]
                 update["_result"] = result
             except (ProviderUnavailableError, MalformedOutputError, ProviderRefusalError) as exc:
+                AGENT_CALLS.labels(provider=rt.model.provider, outcome=type(exc).__name__).inc()
                 rejected.append(f"attempt {attempts}: {exc}")
             if (
                 attempts < MAX_HYPOTHESIS_ATTEMPTS

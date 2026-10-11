@@ -11,11 +11,18 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from nimbrix_api import __version__
 from nimbrix_api.api.v1.router import api_router
-from nimbrix_api.core.config import Settings, get_settings
+from nimbrix_api.core.business_metrics import DatabaseGaugeCollector
+from nimbrix_api.core.config import Environment, Settings, get_settings
 from nimbrix_api.core.errors import UnhandledErrorMiddleware, register_error_handlers
 from nimbrix_api.core.logging import configure_logging
-from nimbrix_api.core.metrics import MetricsMiddleware
+from nimbrix_api.core.metrics import REGISTRY, MetricsMiddleware
+from nimbrix_api.core.protection import (
+    BodySizeLimitMiddleware,
+    RateLimitMiddleware,
+    SecurityHeadersMiddleware,
+)
 from nimbrix_api.core.request_context import REQUEST_ID_HEADER, RequestIdMiddleware
+from nimbrix_api.core.telemetry import setup_tracing
 from nimbrix_api.db.session import Database, build_engine
 
 logger = logging.getLogger(__name__)
@@ -57,7 +64,8 @@ def create_app(settings: Settings | None = None, database: Database | None = Non
     app.dependency_overrides[get_settings] = lambda: settings
 
     register_error_handlers(app)
-    # Middleware added later wraps earlier ones: RequestId -> Metrics -> (CORS) -> errors.
+    # Middleware added later wraps earlier ones. Outermost first:
+    # RequestId -> SecurityHeaders -> Metrics -> RateLimit -> BodySize -> (CORS) -> errors.
     app.add_middleware(UnhandledErrorMiddleware)
     if settings.cors_allowed_origins:
         app.add_middleware(
@@ -67,8 +75,33 @@ def create_app(settings: Settings | None = None, database: Database | None = Non
             allow_headers=["Content-Type", "Idempotency-Key", REQUEST_ID_HEADER],
             expose_headers=[REQUEST_ID_HEADER],
         )
+    app.add_middleware(BodySizeLimitMiddleware, max_bytes=settings.max_request_bytes)
+    if settings.rate_limit_enabled:
+        app.add_middleware(
+            RateLimitMiddleware,
+            requests_per_minute=settings.rate_limit_requests_per_minute,
+            login_per_minute=settings.rate_limit_login_per_minute,
+        )
     app.add_middleware(MetricsMiddleware)
+    app.add_middleware(
+        SecurityHeadersMiddleware, hsts=settings.environment is Environment.PRODUCTION
+    )
     # Added last so it wraps everything: every log line and response carries the ID.
     app.add_middleware(RequestIdMiddleware)
     app.include_router(api_router)
+    _register_db_gauges(db)
+    setup_tracing(settings, app=app, engine=db.engine)
     return app
+
+
+_gauge_collector: DatabaseGaugeCollector | None = None
+
+
+def _register_db_gauges(db: Database) -> None:
+    """One collector per process; it follows the most recently created app's database."""
+    global _gauge_collector  # noqa: PLW0603
+    if _gauge_collector is None:
+        _gauge_collector = DatabaseGaugeCollector(db.session_factory)
+        REGISTRY.register(_gauge_collector)
+    else:
+        _gauge_collector.session_factory = db.session_factory

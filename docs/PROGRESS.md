@@ -364,3 +364,46 @@ E2E covers the complete demo path (spike → anomaly → investigation → recom
 simulation → approval → simulated execution → audit), policy-denied production stop,
 self-approval denial, viewer read-only behavior, backend failure with retry, login redirect,
 and unauthenticated API access.
+
+---
+
+## Phase 8 — Security, observability, reliability, and testing
+
+**Status: complete.** Details: [threat-model.md](threat-model.md), [operations.md](operations.md), [security.md](security.md).
+
+### Implemented
+
+- OpenTelemetry tracing (opt-in OTLP/HTTP): HTTP routes, SQL (no parameters), one span per job and
+  per agent node; `trace_id`/`span_id` in JSON logs.
+- Prometheus metrics: HTTP, jobs, import latency and rows, agent model calls and tokens,
+  investigations, remediation outcomes, approval decisions, policy denials, auth outcomes, rate
+  limiting, and DB-backed gauges (recommendations by status, jobs by state).
+- `observability` compose profile: Prometheus + Grafana with a provisioned 10-panel dashboard.
+- Security headers (API and web CSP), request body limit (declared and streamed), in-process
+  rate limits (login and general), trusted `X-Forwarded-For` handling.
+- Retention job (idempotency records, sessions, raw uploads) and documented deletion, backup,
+  restore, DR limits, and least-privilege IAM.
+- Threat model covering prompt injection, tenant leakage, malicious CSV, IAM misuse, approval
+  bypass, double execution, stale cloud state, session attacks, telemetry leakage.
+- Contract tests (committed OpenAPI == code, error envelope on every operation, auth on every
+  non-public route, Idempotency-Key on mutations), load-test tool for cost queries.
+- CI: gitleaks (full history), pip-audit, `npm audit --omit=dev`, dependency review on PRs,
+  observability profile smoke check.
+
+### Verification
+
+| Command | Result |
+| --- | --- |
+| `uv run pytest` (unit + integration) | **201 passed** |
+| `npm test` / lint / tsc / build | 39 passed / clean |
+| `make e2e` (with CSP and rate limits active) | **12 passed** |
+| `docker compose --profile observability up` | Prometheus targets `nimbrix-api` and `nimbrix-worker` **up**; Grafana dashboard provisioned (10 panels) |
+| gitleaks (git history) | no leaks (2 fake test keys allowlisted explicitly) |
+| pip-audit (runtime) / `npm audit --omit=dev` | no known vulnerabilities / 0 vulnerabilities |
+| actionlint | clean |
+| Load smoke test (200 req × 5 endpoints, concurrency 10, API direct) | all 200; p95 53–103 ms (full benchmark in Phase 9) |
+
+### Known limitations
+
+- Rate limits are per process; tenant isolation is not backed by PostgreSQL RLS; web CSP allows inline scripts.
+- Tracing was verified with an in-memory exporter; no external collector was run.

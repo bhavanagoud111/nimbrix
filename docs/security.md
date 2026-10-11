@@ -1,9 +1,7 @@
 # Nimbrix Security
 
-> Phase 0 baseline. A full threat model (prompt injection, tenant leakage, malicious
-> CSV, IAM misuse, approval bypass, double execution, stale cloud state) is a Phase 8
-> deliverable; the trust boundaries are already defined in
-> [architecture.md §5](architecture.md#5-trust-boundaries).
+> Threat model: [threat-model.md](threat-model.md). Operations, retention, and IAM:
+> [operations.md](operations.md). Trust boundaries: [architecture.md §5](architecture.md#5-trust-boundaries).
 
 ## Principles
 
@@ -13,7 +11,7 @@
 4. Secrets never appear in code, Git history, browser bundles, logs, prompts, or screenshots.
 5. Deterministic code — not an LLM — computes money, forecasts, risk, and policy decisions.
 
-## Controls implemented in Phase 0
+## Controls
 
 | Area | Control | Verified by |
 | --- | --- | --- |
@@ -31,17 +29,25 @@
 | Database | Parameterized SQL via SQLAlchemy; per-connection `statement_timeout`; connect timeout. | `db/session.py` |
 | CI | Least-privilege `permissions: contents: read`; throwaway CI-only DB password. | `.github/workflows/ci.yml` |
 
+| Authentication | Demo auth: scrypt hashes, hashed expiring revocable sessions, HttpOnly SameSite cookies, CSRF token bound to the session, timing-equalized failures; OIDC documented ([ADR-0007](adr/0007-authentication-and-tenancy.md)). | `test_identity_rbac.py` |
+| Authorization | RBAC on every route (`require(...)`), denials audited; contract test asserts every non-public route has the auth dependency. | `test_contracts.py`, `test_identity_rbac.py` |
+| Tenancy | Session-bound tenant; `get_owned` 404 + audit for cross-tenant IDs. | `test_tenant_isolation_fails_closed` |
+| Abuse | Login 10/min per IP, 600/min per session or IP (per process), 12 MiB body limit (declared and streamed), 10 MiB uploads. | `test_protection.py` |
+| Headers | API: CSP `default-src 'none'`, nosniff, DENY framing, no-referrer, no-store, HSTS in production. Web: CSP, nosniff, DENY, referrer policy, permissions policy. | `test_security_headers_on_api_responses` |
+| Supply chain | CI: gitleaks over full history, pip-audit (runtime deps), `npm audit --omit=dev`, dependency review on PRs. | `.github/workflows/ci.yml` |
+
 ## Known gaps (tracked, not hidden)
 
-- **No authentication or RBAC yet** — Phase 1. The only endpoints are health/metrics.
+- Demo authentication only; OIDC is designed but not implemented.
+- Tenant isolation is application-enforced; PostgreSQL row-level security is not enabled.
+- Rate limits are in-memory per API process (no shared store).
+- The web CSP needs `'unsafe-inline'` for scripts (Next.js inline bootstrap); a nonce-based CSP is future work.
 - `/api/v1/metrics` and `/api/v1/docs` are unauthenticated on the API container port;
-  they are bound to `127.0.0.1` locally and blocked at the web proxy. Production network
-  policy is a Phase 8/9 item.
-- No rate limiting, CSP, or security headers beyond defaults yet — Phase 8.
-- `npm audit` reports 5 high-severity advisories, all in the **dev-only** lint toolchain
+  they are bound to `127.0.0.1` locally and blocked at the web proxy. In production, restrict
+  them with network policy (security groups / private subnets).
+- `npm audit` (all dependencies) reports high-severity advisories only in the **dev-only** lint toolchain
   (`braces` via `micromatch` → `fast-glob` → `@next/eslint-plugin-next`). No fix exists
   without downgrading `eslint-config-next` to 14.x. Not shipped in the runtime image.
-- Secret scanning and dependency review in CI — Phase 8.
 
 ## Reporting
 

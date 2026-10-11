@@ -9,6 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, joinedload
 
 from nimbrix_api.core.audit import record_audit
+from nimbrix_api.core.business_metrics import AUTH_EVENTS
 from nimbrix_api.core.config import Settings
 from nimbrix_api.core.errors import ApiError
 from nimbrix_api.core.security import (
@@ -60,6 +61,7 @@ def login(
             outcome="denied",
         )
         session.commit()
+        AUTH_EVENTS.labels(outcome="failure").inc()
         raise ApiError(401, "invalid_credentials", "Invalid email or password")
 
     memberships = sorted(user.memberships, key=lambda m: m.tenant.slug)
@@ -89,6 +91,7 @@ def login(
         payload={"role": membership.role.name},
     )
     session.flush()
+    AUTH_EVENTS.labels(outcome="success").inc()
     return IssuedSession(token=token, csrf_token=csrf, row=row, membership=membership)
 
 

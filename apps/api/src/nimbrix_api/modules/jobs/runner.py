@@ -18,12 +18,14 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session, sessionmaker
 
 from nimbrix_api.core.config import Settings
+from nimbrix_api.core.telemetry import tracer
 from nimbrix_api.modules.jobs import queue
 from nimbrix_api.modules.jobs.queue import PermanentJobError, RetryableJobError
 
 logger = logging.getLogger(__name__)
 
 SCHEDULE_INTERVAL_SECONDS = 300
+RETENTION_INTERVAL_SECONDS = 24 * 3600
 WORKER_REGISTRY = CollectorRegistry(auto_describe=True)
 JOBS_PROCESSED = Counter(
     "nimbrix_jobs_processed_total",
@@ -123,7 +125,15 @@ def run_one(session_factory: sessionmaker[Session], settings: Settings, worker_i
     try:
         if handler is None:
             raise PermanentJobError(f"no handler registered for job kind '{ctx.kind}'")
-        result = handler(ctx)
+        with tracer.start_as_current_span(
+            f"job {ctx.kind}",
+            attributes={
+                "nimbrix.job.kind": ctx.kind,
+                "nimbrix.job.id": str(ctx.job_id),
+                "nimbrix.job.attempt": ctx.attempt,
+            },
+        ):
+            result = handler(ctx)
     except (RetryableJobError, OperationalError) as exc:
         with session_factory() as session:
             state = queue.fail(session, ctx.job_id, f"{type(exc).__name__}: {exc}", retryable=True)
@@ -171,8 +181,10 @@ def run_forever(session_factory: sessionmaker[Session], settings: Settings) -> N
     start_http_server(settings.worker_metrics_port, registry=WORKER_REGISTRY)
     logger.info("worker_started", extra={"worker_id": worker_id})
     from nimbrix_api.modules.analysis.scheduler import schedule_daily_analysis  # noqa: PLC0415
+    from nimbrix_api.modules.maintenance import run_retention  # noqa: PLC0415
 
     next_schedule = 0.0
+    next_retention = 0.0
     while not stop.is_set():
         if time.monotonic() >= next_schedule:
             try:
@@ -180,6 +192,11 @@ def run_forever(session_factory: sessionmaker[Session], settings: Settings) -> N
                     scheduled = schedule_daily_analysis(session)
                 if scheduled:
                     logger.info("analysis_scheduled", extra={"tenants": scheduled})
+                if time.monotonic() >= next_retention:
+                    with session_factory() as session:
+                        purged = run_retention(session, settings)
+                    logger.info("retention_applied", extra=purged)
+                    next_retention = time.monotonic() + RETENTION_INTERVAL_SECONDS
             except OperationalError:
                 logger.exception("scheduler_database_error")
             next_schedule = time.monotonic() + SCHEDULE_INTERVAL_SECONDS

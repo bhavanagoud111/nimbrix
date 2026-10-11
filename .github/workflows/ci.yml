@@ -107,6 +107,44 @@ jobs:
       - name: Fail on drift
         run: git diff --exit-code -- packages/contracts
 
+  security:
+    name: Secret scan and dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Secret scan of the full git history (gitleaks)
+        run: docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.30.1 git /repo --no-banner --config /repo/.gitleaks.toml --redact
+      - uses: astral-sh/setup-uv@v10
+        with:
+          version: ${{ env.UV_VERSION }}
+      - name: Python runtime dependencies (pip-audit)
+        working-directory: apps/api
+        run: |
+          uv export --frozen --no-dev --no-emit-project --format requirements-txt > "$RUNNER_TEMP/requirements.txt"
+          uvx pip-audit -r "$RUNNER_TEMP/requirements.txt" --disable-pip
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - name: Node production dependencies (npm audit)
+        run: npm audit --omit=dev --audit-level=high
+
+  dependency-review:
+    name: Dependency review
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/dependency-review-action@v5
+        with:
+          fail-on-severity: high
+
   stack-e2e:
     name: Docker Compose stack + Playwright E2E
     runs-on: ubuntu-latest
@@ -132,6 +170,15 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - name: Playwright
         run: npx playwright test
+      - name: Observability profile starts and scrapes both targets
+        run: |
+          docker compose --profile observability up -d --wait prometheus grafana
+          for _ in $(seq 1 20); do
+            up=$(curl -fsS http://127.0.0.1:9290/api/v1/targets | python3 -c 'import sys,json; print(sum(t["health"]=="up" for t in json.load(sys.stdin)["data"]["activeTargets"]))')
+            [ "$up" = "2" ] && exit 0
+            sleep 3
+          done
+          echo "Prometheus targets not up" && exit 1
       - name: Service logs on failure
         if: failure()
         run: docker compose logs --no-color

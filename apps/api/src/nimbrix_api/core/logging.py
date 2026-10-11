@@ -10,6 +10,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from nimbrix_api.core.request_context import get_request_id
+from nimbrix_api.core.telemetry import current_trace_ids
 
 # Credentials embedded in URLs (scheme://user:password@host) and common key=value secrets.
 _URL_CREDENTIALS = re.compile(r"(?P<scheme>[a-zA-Z][a-zA-Z0-9+.-]*://)(?P<user>[^:/@\s]+):[^@\s]+@")
@@ -40,6 +41,9 @@ class JsonFormatter(logging.Formatter):
         request_id = get_request_id()
         if request_id:
             payload["request_id"] = request_id
+        ids = current_trace_ids()
+        if ids:
+            payload["trace_id"], payload["span_id"] = ids
         for key, value in record.__dict__.items():
             if key not in _STANDARD_ATTRS and not key.startswith("_"):
                 payload[key] = redact(value) if isinstance(value, str) else value

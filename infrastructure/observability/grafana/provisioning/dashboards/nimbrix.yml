@@ -1,0 +1,7 @@
+apiVersion: 1
+providers:
+  - name: nimbrix
+    folder: Nimbrix
+    type: file
+    options:
+      path: /var/lib/grafana/dashboards
