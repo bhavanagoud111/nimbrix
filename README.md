@@ -56,7 +56,7 @@ paid LLM key required.
 Prerequisites: Docker with Compose v2. (For development and tests: Node.js 22+, [uv](https://docs.astral.sh/uv/).)
 
 ```bash
-git clone <repository-url> nimbrix && cd nimbrix
+git clone https://github.com/bhavanagoud111/nimbrix.git && cd nimbrix
 cp .env.example .env            # local-only values; change the passwords if you like
 make demo                       # build + start everything and seed demo data (opt-in)
 scripts/wait-for-demo.sh        # waits until synthetic data is imported and analyzed
